@@ -1,0 +1,63 @@
+<?php include("/home/haiku_files/haiku-files.org/scanDirectory.php"); ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html><head>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+  <link rel="stylesheet" type="text/css" href="/style/style.css" title="default">
+  <link rel="alternate" type="application/rss+xml" title="Haiku Supported Builds - x86 GCC 2 Hybrid RSS feed" href="rss/" />
+
+  <link rel="shortcut icon" href="favicon.png">
+  <title><%block name="title"/> | Haiku Files</title></head><body>
+  <div id="wrapper">
+   <div id="header">
+    <div id="logo">
+    <a href="http://www.haiku-files.org/"><img src="/style/logo.png" alt="logo"></a>
+    </div>
+    <div id="links">
+     <a href="http://www.haiku-os.org/"><img src="/style/icon_haiku_32.png" alt="Haiku Project" title="Haiku Project"></a>
+     <a href="http://dev.haiku-os.org/"><img src="/style/icon_bug_tracker_32.png" alt="Haiku's Bug Tracker" title="Haiku's Bug Tracker"></a>
+     <img src="/style/top-link-separator.png" alt="sep" style="padding: 0pt 10px;">
+     <a href="http://www.haiku-os.org/contact"><img src="/style/icon_32_mail.png" alt="contact" title="Contact the Haiku Project"></a>
+     <a href="http://www.haiku-os.org/community/donating_to_haiku"><img src="/style/icon_32_donate.png" alt="donate" title="Make a donation to the Haiku Project"></a>
+    </div>
+   </div>
+   <div id="menu">
+   </div>
+<div id="content">
+	<div class="box">
+		<p>
+The Haiku source is continually built by a dedicated machine. These "nightly
+images" are provided mainly for development and testing purposes. You can
+download and install these snapshots to check out the latest features
+and bugfixes, be aware though that they <strong>may be unstable</strong> at times.
+		</p>
+		<p>
+The GCC 2 Hybrid images on this page are recommended, as they are the most
+similar to official releases. Developers who choose to release software that
+requires a nightly build, are requested to provide a build for the latest stable nightly
+image.
+		</p>
+		<p>
+For more information on missing packages, image and archive formats, etc.,
+please refer to this site's <a href="http://www.haiku-files.org/">main page</a>.
+		</p>
+	</div>
+	<div class="box">
+		<img src="/style/ico_64_folder_dev.png" alt="nightlies">
+		<h2>Recommended Nightly Images (x86 GCC 2 Hybrid)</h2>
+		<p>
+		</p>
+			<!--<?php scanDirectory("."); ?> -->
+	</div>
+
+</div>
+
+<div id="footer">
+Copyright 2001 - 2012 Haiku, Inc. &#8212; Haiku&#174; and the
+HAIKU logo&#174; are registered trademarks of
+<a href="http://www.haiku-inc.org">Haiku, Inc.</a> | Proudly Hosted by
+DreamHost.
+</div>
+		</div>
+	</body>
+</html>
