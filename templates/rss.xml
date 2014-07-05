@@ -1,0 +1,22 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<atom:link href="http://download.haiku-os.org/nightly-images/${arch}/rss/" rel="self" type="application/rss+xml" />
+		<title>Haiku Nightly Images - ${arch}</title>
+		<description>
+			Haiku Files is an archive of nightly builds for Haiku&#174;, an open-source operating system.
+			They are provided for development and testing purposes only.
+		</description>
+		<generator>Build Factory</generator>
+		<link>http://download.haiku-os.org/</link>
+
+        %for item in items:
+            <item>
+                <title>${item.filename}</title>
+                <pubDate>${item.date}</pubDate>
+                <description>${item.size} MB</description>
+                <link>http://download.haiku-os.org/nightly-images/${variant}/${item.filename}</link>
+                <guid>http://download.haiku-os.org/nightly-images/${variant}/${item.filename}</guid>
+            </item>
+        %endfor
+	</channel>
+</rss>

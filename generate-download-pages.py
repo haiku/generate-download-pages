@@ -1,5 +1,6 @@
 import argparse
 from collections import defaultdict, OrderedDict, namedtuple
+import email.utils
 import os
 import re
 
@@ -20,7 +21,7 @@ IMAGE_TYPES = (
 )
 
 #
-# Variants
+# Common constants
 #
 
 VARIANTS = (
@@ -35,8 +36,10 @@ VARIANTS = (
     ("ppc.html", "ppc"),
 )
 
+RE_IMAGE_PATTERN = re.compile(r'.*(hrev[0-9]*)-([^-]*)-([^\.]*)\.zip')
+
 #
-# Process
+# Process data for the html
 #
 
 Image = namedtuple("Image", ['filename', 'revision', 'image_type'])
@@ -58,7 +61,7 @@ def index_archives(archive_dir):
 
     images = []
     for archive in files:
-        m = re.match(r'.*(hrev[0-9]*)-([^-]*)-([^\.]*)\.zip', archive)
+        m = RE_IMAGE_PATTERN.match(archive)
         if m:
             images.append(Image(archive, m.group(1), m.group(3)))
 
@@ -90,6 +93,28 @@ def index_archives(archive_dir):
 
 
 #
+# Process data for the rss
+#
+
+Entry = namedtuple("Entry", ['filename', 'date', 'size'])
+
+def index_files_for_rss(archive_dir, limit=20):
+    # reverse sort because we want the newest first
+    # use natural sorting from when we switch from 5 digit hrev to 6 digits
+    entries = sorted(os.listdir(archive_dir), key=natural_sort_key, reverse=True)
+    rss_output = []
+    for entry in entries:
+        if not RE_IMAGE_PATTERN.match(entry):
+            continue
+        if len(rss_output) == limit:
+            break
+        path = os.path.join(archive_dir, entry)
+        size = os.path.getsize(path) >> 20L
+        date = email.utils.formatdate(os.path.getmtime(path))
+        rss_output.append(Entry(entry, date, size))
+    return rss_output
+
+#
 # Main program
 #
 
@@ -104,6 +129,17 @@ if __name__ == "__main__":
 
     for variant in VARIANTS:
         table = index_archives(os.path.join(args.archive_dir, variant[1]))
+
+        # index html
         template = template_lookup.get_template(variant[0])
         out_f = open(os.path.join(args.archive_dir, variant[1], "index.html"), "w")
         out_f.write(template.render(headers=headers(), table=table))
+        out_f.close()
+
+        # rss
+        template = template_lookup.get_template("rss.xml")
+        out_f = open(os.path.join(args.archive_dir, variant[1], "rss", "index.xml"), "w")
+        out_f.write(template.render(arch=variant[1],
+                                    items=index_files_for_rss(os.path.join(args.archive_dir, variant[1])),
+                                    variant=variant[1]))
+        out_f.close()
