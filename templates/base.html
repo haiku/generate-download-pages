@@ -43,16 +43,37 @@ please refer to this site's <a href="http://www.haiku-files.org/">main page</a>.
 	</div>
 	<div class="box">
 		<img src="/style/ico_64_folder_dev.png" alt="nightlies">
-		<h2>Recommended Nightly Images (x86 GCC 2 Hybrid)</h2>
+		<h2><%block name="table_title"/></h2>
 		<p>
 		</p>
-			<!--<?php scanDirectory("."); ?> -->
+
+        <table>
+            <tr>
+                <th>Revision</th>
+                %for header in headers:
+                    <th>${header}</th>
+                %endfor
+            </tr>
+
+            %for row in table:
+                <tr>
+                    <td><a href="http://cgit.haiku-os.org/haiku/tag/?id=${row.revision}">${row.revision}</a></td>
+                    %for variant in row.variants:
+                        <td>
+                            %if variant:
+                                <a href="${variant}">zip</a>
+                            %endif
+                        </td>
+                    %endfor
+                </tr>
+            %endfor
+        </table>
 	</div>
 
 </div>
 
 <div id="footer">
-Copyright 2001 - 2012 Haiku, Inc. &#8212; Haiku&#174; and the
+Copyright 2001 - 2014 Haiku, Inc. &#8212; Haiku&#174; and the
 HAIKU logo&#174; are registered trademarks of
 <a href="http://www.haiku-inc.org">Haiku, Inc.</a> | Proudly Hosted by
 DreamHost.
