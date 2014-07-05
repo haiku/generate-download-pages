@@ -28,8 +28,8 @@ VARIANTS = (
     # ("html template", "archives_location")
     ("gcc2-hybrid.html", "x86_gcc2_hybrid"),
     ("gcc2.html", "x86_gcc2"),
-    ("gcc4.html", "x86_gcc4"),
-    ("gcc4-hybrid.html", "x86_gcc4_hybrid"),
+    ("gcc4.html", "x86"),
+    ("gcc4-hybrid.html", "x86_hybrid"),
     ("x86_64.html", "x86_64"),
     ("arm.html", "arm"),
     ("m68k.html", "m68k"),
