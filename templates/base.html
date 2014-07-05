@@ -24,18 +24,7 @@
    </div>
 <div id="content">
 	<div class="box">
-		<p>
-The Haiku source is continually built by a dedicated machine. These "nightly
-images" are provided mainly for development and testing purposes. You can
-download and install these snapshots to check out the latest features
-and bugfixes, be aware though that they <strong>may be unstable</strong> at times.
-		</p>
-		<p>
-The GCC 2 Hybrid images on this page are recommended, as they are the most
-similar to official releases. Developers who choose to release software that
-requires a nightly build, are requested to provide a build for the latest stable nightly
-image.
-		</p>
+		<%block name="description"/>
 		<p>
 For more information on missing packages, image and archive formats, etc.,
 please refer to this site's <a href="http://www.haiku-files.org/">main page</a>.
@@ -69,6 +58,8 @@ please refer to this site's <a href="http://www.haiku-files.org/">main page</a>.
             %endfor
         </table>
 	</div>
+
+    ${self.body()}
 
 </div>
 
