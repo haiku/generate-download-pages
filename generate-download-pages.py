@@ -144,14 +144,18 @@ if __name__ == "__main__":
 
         # index html
         template = template_lookup.get_template(variant[0])
-        out_f = open(os.path.join(args.archive_dir, variant[1], "index.html"), "w")
+        index_path = os.path.join(args.archive_dir, variant[1], "index.html")
+        out_f = open(index_path + ".tmp", "w")
         out_f.write(template.render(headers=headers(), table=table))
         out_f.close()
+        os.rename(index_path + ".tmp", index_path)
 
         # rss
         template = template_lookup.get_template("rss.xml")
-        out_f = open(os.path.join(args.archive_dir, variant[1], "rss", "atom.xml"), "w")
+        rss_path = os.path.join(args.archive_dir, variant[1], "rss", "atom.xml")
+        out_f = open(rss_path + ".tmp", "w")
         out_f.write(template.render(arch=variant[1],
                                     items=index_files_for_rss(os.path.join(args.archive_dir, variant[1])),
                                     variant=variant[1]))
         out_f.close()
+        os.rename(rss_path + ".tmp", rss_path)
