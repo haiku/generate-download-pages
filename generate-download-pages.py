@@ -20,10 +20,6 @@ IMAGE_TYPES = (
     ("cd", "ISO"),
 )
 
-#
-# Common constants
-#
-
 VARIANTS = (
     # ("html template", "archives_location")
     ("gcc2-hybrid.html", "x86_gcc2_hybrid"),
@@ -35,6 +31,10 @@ VARIANTS = (
     ("m68k.html", "m68k"),
     ("ppc.html", "ppc"),
 )
+
+#
+# Common constants
+#
 
 RE_IMAGE_PATTERN = re.compile(r'.*(hrev[0-9]*)-([^-]*)-([^\.]*)\.zip')
 
@@ -121,13 +121,25 @@ def index_files_for_rss(archive_dir, limit=20):
 parser = argparse.ArgumentParser(description="Generate index files for Haiku Nightly Images hosting")
 parser.add_argument('--archive-dir', dest='archive_dir', default=ARCHIVE_DIR, action='store',
                     help="specify the directory with the images")
+parser.add_argument('variant', nargs="*", help="build the pages for the specified variants")
 
 if __name__ == "__main__":
     args = parser.parse_args()
 
+    # check what to build
+    if len(args.variant) == 0:
+        variants = VARIANTS
+    else:
+        variants = []
+        for variant in VARIANTS:
+            if variant[1] in args.variant:
+                variants.append(variant)
+        if len(variants) != len(args.variant):
+            print "WARNING: cannot find all supplied variants. Only building the known variants. Please check your input"
+
     template_lookup = TemplateLookup(directories=[TEMPLATE_DIR])
 
-    for variant in VARIANTS:
+    for variant in variants:
         table = index_archives(os.path.join(args.archive_dir, variant[1]))
 
         # index html
