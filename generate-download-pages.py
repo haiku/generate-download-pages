@@ -31,7 +31,6 @@ VARIANTS = (
     ("x86_64.html", "x86_64"),
     ("arm.html", "arm"),
     ("m68k.html", "m68k"),
-    ("mipsel.html", "mipsel"),
     ("ppc.html", "ppc"),
 )
 
