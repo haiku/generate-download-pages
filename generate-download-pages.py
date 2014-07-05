@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
         # rss
         template = template_lookup.get_template("rss.xml")
-        out_f = open(os.path.join(args.archive_dir, variant[1], "rss", "index.xml"), "w")
+        out_f = open(os.path.join(args.archive_dir, variant[1], "rss", "atom.xml"), "w")
         out_f.write(template.render(arch=variant[1],
                                     items=index_files_for_rss(os.path.join(args.archive_dir, variant[1])),
                                     variant=variant[1]))
