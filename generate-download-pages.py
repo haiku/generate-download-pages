@@ -57,13 +57,13 @@ def headers():
 def index_archives(archive_dir):
     # reverse sort because we want the newest first
     # use natural sorting from when we switch from 5 digit hrev to 6 digits
-    files = sorted(os.listdir(archive_dir), key=natural_sort_key, reverse=True)
+    entries = sorted(os.listdir(archive_dir), key=natural_sort_key, reverse=True)
 
     images = []
-    for archive in files:
-        m = RE_IMAGE_PATTERN.match(archive)
+    for entry in entries:
+        m = RE_IMAGE_PATTERN.match(entry)
         if m:
-            images.append(Image(archive, m.group(1), m.group(3)))
+            images.append(Image(entry, m.group(1), m.group(3)))
 
     # sort the images into a table-like structure that will be used to create the table
     variant_columns = list(q for q,_ in IMAGE_TYPES)
