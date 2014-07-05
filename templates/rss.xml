@@ -1,6 +1,6 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 	<channel>
-		<atom:link href="http://download.haiku-os.org/nightly-images/${arch}/rss/" rel="self" type="application/rss+xml" />
+		<atom:link href="http://download.haiku-os.org/nightly-images/${arch}/rss/atom.xml" rel="self" type="application/rss+xml" />
 		<title>Haiku Nightly Images - ${arch}</title>
 		<description>
 			Haiku Files is an archive of nightly builds for Haiku&#174;, an open-source operating system.
