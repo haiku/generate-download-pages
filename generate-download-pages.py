@@ -1,3 +1,4 @@
+import argparse
 from collections import defaultdict, OrderedDict, namedtuple
 import os
 import re
@@ -9,7 +10,7 @@ from mako.lookup import TemplateLookup
 #
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates/")
-ARCHIVE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "FILES", "nightly-images")
+ARCHIVE_DIR = "/srv/www/haikufiles/files/nightly-images/"
 IMAGE_TYPES = (
     # ("filename_type", "pretty type")
     ("anyboot", "Anyboot"),
@@ -88,11 +89,21 @@ def index_archives(archive_dir):
     return table
 
 
+#
+# Main program
+#
+
+parser = argparse.ArgumentParser(description="Generate index files for Haiku Nightly Images hosting")
+parser.add_argument('--archive-dir', dest='archive_dir', default=ARCHIVE_DIR, action='store',
+                    help="specify the directory with the images")
+
 if __name__ == "__main__":
+    args = parser.parse_args()
+
     template_lookup = TemplateLookup(directories=[TEMPLATE_DIR])
 
     for variant in VARIANTS:
-        table = index_archives(os.path.join(ARCHIVE_DIR, variant[1]))
+        table = index_archives(os.path.join(args.archive_dir, variant[1]))
         template = template_lookup.get_template(variant[0])
-        out_f = open(os.path.join(ARCHIVE_DIR, variant[1], "index.html"), "w")
+        out_f = open(os.path.join(args.archive_dir, variant[1], "index.html"), "w")
         out_f.write(template.render(headers=headers(), table=table))
