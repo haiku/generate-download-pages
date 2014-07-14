@@ -11,7 +11,7 @@ from mako.lookup import TemplateLookup
 #
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates/")
-ARCHIVE_DIR = "/srv/www/haikufiles/files/nightly-images/"
+ARCHIVE_DIR = "/srv/www/haikufiles/files/nightly-images"
 IMAGE_TYPES = (
     # ("filename_type", "pretty type")
     ("anyboot", "Anyboot"),
@@ -54,6 +54,10 @@ def headers():
     return list(q for _,q in IMAGE_TYPES)
 
 
+def imageTypes():
+    return list(q for q,_ in IMAGE_TYPES)
+
+
 def index_archives(archive_dir):
     # reverse sort because we want the newest first
     # use natural sorting from when we switch from 5 digit hrev to 6 digits
@@ -69,6 +73,9 @@ def index_archives(archive_dir):
     variant_columns = list(q for q,_ in IMAGE_TYPES)
     content = OrderedDict()
 
+    # populate a dict with the newest entry for each image type
+    currentImages = {}
+
     for image in images:
         if image.image_type not in variant_columns:
             print "Unknown image type for " + image.filename
@@ -78,6 +85,9 @@ def index_archives(archive_dir):
             content[image.revision] = defaultdict(str)
 
         content[image.revision][image.image_type] = image.filename
+
+        if image.image_type not in currentImages:
+            currentImages[image.image_type] = image.filename
 
     # flatten into a table
     table = []
@@ -89,7 +99,10 @@ def index_archives(archive_dir):
             row.variants.append(links[variant])
         table.append(row)
 
-    return table
+    return {
+        'table' : table,
+        'currentImages' : currentImages,
+    }
 
 
 #
@@ -139,14 +152,19 @@ if __name__ == "__main__":
 
     template_lookup = TemplateLookup(directories=[TEMPLATE_DIR])
 
+    currentImageMapLines = [
+        '# This contains mappings for current images used by Apache RewriteMap',
+        '',
+    ]
+
     for variant in variants:
-        table = index_archives(os.path.join(args.archive_dir, variant[1]))
+        result = index_archives(os.path.join(args.archive_dir, variant[1]))
 
         # index html
         template = template_lookup.get_template(variant[0])
         index_path = os.path.join(args.archive_dir, variant[1], "index.html")
         out_f = open(index_path + ".tmp", "w")
-        out_f.write(template.render(headers=headers(), table=table))
+        out_f.write(template.render(headers=headers(), arch=variant[1], imageTypes=imageTypes(), table=result['table']))
         out_f.close()
         os.rename(index_path + ".tmp", index_path)
 
@@ -159,3 +177,15 @@ if __name__ == "__main__":
                                     variant=variant[1]))
         out_f.close()
         os.rename(rss_path + ".tmp", rss_path)
+
+        # add current images for this variant
+        for key, value in result['currentImages'].iteritems():
+            currentImageMapLines.append('%s/current-%s %s/%s' % (variant[1], key, variant[1], value))
+
+    # write apache rewrite map file for current images
+    map_path = os.path.join(args.archive_dir, "currentImages.map")
+    out_f = open(map_path + ".tmp", "w")
+    out_f.write('\n'.join(currentImageMapLines) + '\n')
+    out_f.close()
+    os.rename(map_path + ".tmp", map_path)
+        

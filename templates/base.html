@@ -44,6 +44,13 @@ please refer to this site's <a href="http://download.haiku-os.org/">main page</a
                 %endfor
             </tr>
 
+            <tr>
+                <td>URLs to current images</td>
+                %for imageType in imageTypes:
+                    <td><a href="/nightly-images/${arch}/current-${imageType}">zip</a></td>
+                %endfor
+            </tr>
+
             %for row in table:
                 <tr>
                     <td><a href="http://cgit.haiku-os.org/haiku/tag/?id=${row.revision}">${row.revision}</a></td>
