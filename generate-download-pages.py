@@ -139,6 +139,8 @@ parser.add_argument('variant', nargs="*", help="build the pages for the specifie
 if __name__ == "__main__":
     args = parser.parse_args()
 
+    uniqueSuffix = '.' + str(os.getpid())
+
     # check what to build
     if len(args.variant) == 0:
         variants = VARIANTS
@@ -152,40 +154,36 @@ if __name__ == "__main__":
 
     template_lookup = TemplateLookup(directories=[TEMPLATE_DIR])
 
-    currentImageMapLines = [
-        '# This contains mappings for current images used by Apache RewriteMap',
-        '',
-    ]
-
     for variant in variants:
         result = index_archives(os.path.join(args.archive_dir, variant[1]))
 
         # index html
         template = template_lookup.get_template(variant[0])
         index_path = os.path.join(args.archive_dir, variant[1], "index.html")
-        out_f = open(index_path + ".tmp", "w")
+        out_f = open(index_path + uniqueSuffix, "w")
         out_f.write(template.render(headers=headers(), arch=variant[1], imageTypes=imageTypes(), table=result['table']))
         out_f.close()
-        os.rename(index_path + ".tmp", index_path)
+        os.rename(index_path + uniqueSuffix, index_path)
 
         # rss
         template = template_lookup.get_template("rss.xml")
         rss_path = os.path.join(args.archive_dir, variant[1], "rss", "atom.xml")
-        out_f = open(rss_path + ".tmp", "w")
+        out_f = open(rss_path + uniqueSuffix, "w")
         out_f.write(template.render(arch=variant[1],
                                     items=index_files_for_rss(os.path.join(args.archive_dir, variant[1])),
                                     variant=variant[1]))
         out_f.close()
-        os.rename(rss_path + ".tmp", rss_path)
+        os.rename(rss_path + uniqueSuffix, rss_path)
 
-        # add current images for this variant
+        # write apache rewrite map file for current images
+        map_path = os.path.join(args.archive_dir, variant[1], "currentImages.map.fragment")
+        out_f = open(map_path + uniqueSuffix, "w")
         for key, value in result['currentImages'].iteritems():
-            currentImageMapLines.append('%s/current-%s %s/%s' % (variant[1], key, variant[1], value))
+            out_f.write('%s/current-%s %s/%s\n' % (variant[1], key, variant[1], value))
+        out_f.close()
+        os.rename(map_path + uniqueSuffix, map_path)
 
-    # write apache rewrite map file for current images
+    # concatenate all fragments to full map file
     map_path = os.path.join(args.archive_dir, "currentImages.map")
-    out_f = open(map_path + ".tmp", "w")
-    out_f.write('\n'.join(currentImageMapLines) + '\n')
-    out_f.close()
-    os.rename(map_path + ".tmp", map_path)
-        
+    os.system('cd "%s"; cat */currentImages.map.fragment >%s' % (args.archive_dir, map_path + uniqueSuffix))
+    os.rename(map_path + uniqueSuffix, map_path)
