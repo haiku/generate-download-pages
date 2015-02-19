@@ -47,7 +47,10 @@ please refer to this site's <a href="http://download.haiku-os.org/">main page</a
             <tr>
                 <td>URLs to current images</td>
                 %for imageType in imageTypes:
-                    <td><a href="/nightly-images/${arch}/current-${imageType}">zip</a></td>
+                    <td>
+                        <a href="/nightly-images/${arch}/current-${imageType}">image</a>
+                        <span class="checksum">[<a href="/nightly-images/${arch}/current-${imageType}.sha256">checksum</a>]</span>
+                    </td>
                 %endfor
             </tr>
 
@@ -57,7 +60,8 @@ please refer to this site's <a href="http://download.haiku-os.org/">main page</a
                     %for variant in row.variants:
                         <td>
                             %if variant:
-                                <a href="${variant}">zip</a>
+                                <a href="${variant}">image</a>
+                                <span class="checksum">[<a href="${variant}.sha256">checksum</a>]</span>
                             %endif
                         </td>
                     %endfor
@@ -67,6 +71,11 @@ please refer to this site's <a href="http://download.haiku-os.org/">main page</a
 
         ${self.body()}
 	</div>
+
+	<div class="box-info">
+	Older images can be found <a href="<%block name="archive_site_url"/>">here</a>.
+	</div>
+
 </div>
 
 <div id="footer">

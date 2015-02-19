@@ -21,22 +21,21 @@ IMAGE_TYPES = (
 )
 
 VARIANTS = (
-    # ("html template", "archives_location")
-    ("gcc2-hybrid.html", "x86_gcc2_hybrid"),
-    ("gcc2.html", "x86_gcc2"),
-    ("gcc4.html", "x86"),
-    ("gcc4-hybrid.html", "x86_hybrid"),
-    ("x86_64.html", "x86_64"),
-    ("arm.html", "arm"),
-    ("m68k.html", "m68k"),
-    ("ppc.html", "ppc"),
+    "arm",
+    "m68k",
+    "ppc",
+    "x86",
+    "x86_64",
+    "x86_gcc2_hybrid",
+    "x86_gcc2",
+    "x86_hybrid",
 )
 
 #
 # Common constants
 #
 
-RE_IMAGE_PATTERN = re.compile(r'.*(hrev[0-9]*)-([^-]*)-([^\.]*)\.zip')
+RE_IMAGE_PATTERN = re.compile(r'.*(hrev[0-9]*)-([^-]*)-([^\.]*)\.zip$')
 
 #
 # Process data for the html
@@ -147,7 +146,7 @@ if __name__ == "__main__":
     else:
         variants = []
         for variant in VARIANTS:
-            if variant[1] in args.variant:
+            if variant in args.variant:
                 variants.append(variant)
         if len(variants) != len(args.variant):
             print "WARNING: cannot find all supplied variants. Only building the known variants. Please check your input"
@@ -155,31 +154,32 @@ if __name__ == "__main__":
     template_lookup = TemplateLookup(directories=[TEMPLATE_DIR])
 
     for variant in variants:
-        result = index_archives(os.path.join(args.archive_dir, variant[1]))
+        result = index_archives(os.path.join(args.archive_dir, variant))
 
         # index html
-        template = template_lookup.get_template(variant[0])
-        index_path = os.path.join(args.archive_dir, variant[1], "index.html")
+        template = template_lookup.get_template(variant + '.html')
+        index_path = os.path.join(args.archive_dir, variant, "index.html")
         out_f = open(index_path + uniqueSuffix, "w")
-        out_f.write(template.render(headers=headers(), arch=variant[1], imageTypes=imageTypes(), table=result['table']))
+        out_f.write(template.render(headers=headers(), arch=variant, imageTypes=imageTypes(), table=result['table']))
         out_f.close()
         os.rename(index_path + uniqueSuffix, index_path)
 
         # rss
         template = template_lookup.get_template("rss.xml")
-        rss_path = os.path.join(args.archive_dir, variant[1], "rss", "atom.xml")
+        rss_path = os.path.join(args.archive_dir, variant, "rss", "atom.xml")
         out_f = open(rss_path + uniqueSuffix, "w")
-        out_f.write(template.render(arch=variant[1],
-                                    items=index_files_for_rss(os.path.join(args.archive_dir, variant[1])),
-                                    variant=variant[1]))
+        out_f.write(template.render(arch=variant,
+                                    items=index_files_for_rss(os.path.join(args.archive_dir, variant)),
+                                    variant=variant))
         out_f.close()
         os.rename(rss_path + uniqueSuffix, rss_path)
 
         # write apache rewrite map file for current images
-        map_path = os.path.join(args.archive_dir, variant[1], "currentImages.map.fragment")
+        map_path = os.path.join(args.archive_dir, variant, "currentImages.map.fragment")
         out_f = open(map_path + uniqueSuffix, "w")
         for key, value in result['currentImages'].iteritems():
-            out_f.write('%s/current-%s %s/%s\n' % (variant[1], key, variant[1], value))
+            out_f.write('%s/current-%s %s/%s\n' % (variant, key, variant, value))
+            out_f.write('%s/current-%s.sha256 %s/%s.sha256\n' % (variant, key, variant, value))
         out_f.close()
         os.rename(map_path + uniqueSuffix, map_path)
 
