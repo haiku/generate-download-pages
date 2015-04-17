@@ -15,7 +15,6 @@ ARCHIVE_DIR = "/srv/www/haikufiles/files/nightly-images"
 IMAGE_TYPES = (
     # ("filename_type", "pretty type")
     ("anyboot", "Anyboot"),
-    ("vmware", "VMDK"),
     ("raw", "Raw"),
     ("cd", "ISO"),
 )
@@ -69,7 +68,7 @@ def index_archives(archive_dir):
             images.append(Image(entry, m.group(1), m.group(3)))
 
     # sort the images into a table-like structure that will be used to create the table
-    variant_columns = list(q for q,_ in IMAGE_TYPES)
+    variant_columns = imageTypes()
     content = OrderedDict()
 
     # populate a dict with the newest entry for each image type
@@ -77,7 +76,6 @@ def index_archives(archive_dir):
 
     for image in images:
         if image.image_type not in variant_columns:
-            print "Unknown image type for " + image.filename
             continue
 
         if image.revision not in content.keys():
