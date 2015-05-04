@@ -3,6 +3,7 @@ from collections import defaultdict, OrderedDict, namedtuple
 import email.utils
 import os
 import re
+import time
 
 from mako.lookup import TemplateLookup
 
@@ -92,12 +93,39 @@ def index_archives(archive_dir):
         row = Row()
         row.revision = revision
         row.variants = []
+        row.mtime = 0
         for variant in variant_columns:
             row.variants.append(links[variant])
+            if not row.mtime:
+                mtime = os.path.getmtime(archive_dir + '/' + links[variant])
+                row.mtime = mtime - mtime % 86400
         table.append(row)
 
+    lastMtime = time.time()
+    minKeepCount = 50
+    minDifference = 2
+    dropCount = 0
+    keepCount = 0
+    filteredTable = []
+    for row in table:
+        difference = (lastMtime - row.mtime) / 86400
+        if (keepCount > minKeepCount and difference < minDifference):
+            dropCount += 1
+            for variant in row.variants:
+                os.remove(archive_dir + '/' + variant)
+                os.remove(archive_dir + '/' + variant + '.sha256')
+        else:
+            #print row.revision, ':', row.mtime, ' ', difference, ' days older'
+            filteredTable.append(row)
+            lastMtime = row.mtime
+            keepCount += 1
+            if keepCount > minKeepCount:
+                minDifference *= 1.5
+
+    #print 'kept ', keepCount, ' and dropped ', dropCount, ' nightlies'
+
     return {
-        'table' : table,
+        'table' : filteredTable,
         'currentImages' : currentImages,
     }
 
