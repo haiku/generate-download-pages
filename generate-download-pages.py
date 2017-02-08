@@ -13,11 +13,16 @@ from mako.lookup import TemplateLookup
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates/")
 ARCHIVE_DIR = "/srv/www/haikufiles/files/nightly-images"
+
+ARM_IMAGE_TYPES = (
+    ("mmc", "SD Card Image"),
+)
+
 IMAGE_TYPES = (
     # ("filename_type", "pretty type")
-    ("anyboot", "Anyboot"),
-    ("raw", "Raw"),
-    ("cd", "ISO"),
+    ("anyboot", "Anyboot ISO"),
+    ("raw", "Raw Image"),
+    #("cd", "Plain ISO"),
 )
 
 VARIANTS = (
@@ -49,15 +54,19 @@ def natural_sort_key(s, _nsre=re.compile('([0-9]+)')):
             for text in re.split(_nsre, s)]
 
 
-def headers():
+def headers(variant):
+    if variant == "arm":
+        return list(q for _,q in ARM_IMAGE_TYPES)
     return list(q for _,q in IMAGE_TYPES)
 
 
-def imageTypes():
+def imageTypes(variant):
+    if variant == "arm":
+        return list(q for q,_ in ARM_IMAGE_TYPES)
     return list(q for q,_ in IMAGE_TYPES)
 
 
-def index_archives(archive_dir):
+def index_archives(variant, archive_dir):
     # reverse sort because we want the newest first
     # use natural sorting from when we switch from 5 digit hrev to 6 digits
     entries = sorted(os.listdir(archive_dir), key=natural_sort_key, reverse=True)
@@ -69,7 +78,7 @@ def index_archives(archive_dir):
             images.append(Image(entry, m.group(1), m.group(3)))
 
     # sort the images into a table-like structure that will be used to create the table
-    variant_columns = imageTypes()
+    variant_columns = imageTypes(variant)
     content = OrderedDict()
 
     # populate a dict with the newest entry for each image type
@@ -180,13 +189,13 @@ if __name__ == "__main__":
     template_lookup = TemplateLookup(directories=[TEMPLATE_DIR])
 
     for variant in variants:
-        result = index_archives(os.path.join(args.archive_dir, variant))
+        result = index_archives(variant, os.path.join(args.archive_dir, variant))
 
         # index html
         template = template_lookup.get_template(variant + '.html')
         index_path = os.path.join(args.archive_dir, variant, "index.html")
         out_f = open(index_path + uniqueSuffix, "w")
-        out_f.write(template.render(headers=headers(), arch=variant, imageTypes=imageTypes(), table=result['table']))
+        out_f.write(template.render(headers=headers(variant), arch=variant, imageTypes=imageTypes(variant), table=result['table']))
         out_f.close()
         os.rename(index_path + uniqueSuffix, index_path)
 

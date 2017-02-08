@@ -8,10 +8,19 @@ This is an unsupported variant, as x86 is the only CPU architecture being
 targeted for R1. It is provided for development and testing purposes only.
 Releasing software that requires these unsupported builds is discouraged.
 		</p>
+
+  <div class="box-stop">
+  The ARM port is in an extremely early state. The kernel may load but a
+  lot of work still needs done before you can get a desktop.
+  </div>
+
+  <div class="box-warning">
+  These images target the Raspberry Pi 2. Haiku can be built for multiple
+  ARM targets, however Raspberry Pi 2 is the only one that has been automated.
+  </div>
+
 </%block>
 
 <%block name="table_title">Unsupported ARM Builds</%block>
 
-<p>
-    The ARM port is still in too early a stage to provide regular builds.
-</p>
+<%block name="archive_site_url">http://www.haiku-files.org/unsupported-builds/arm/</%block>
