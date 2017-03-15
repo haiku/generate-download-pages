@@ -29,7 +29,11 @@
 For more information on missing packages, image and archive formats, etc.,
 please refer to this site's <a href="http://download.haiku-os.org/">main page</a>.
 		</p>
+                <p>
+Global CDN mirroring generously provided by <a href='http://keycdn.com' target="_BLANK"><img src=" https://logos.keycdn.com/keycdn-logo.png" style='float: none; width: 6em; margin: 2px; vertical-align: bottom;'></a>
+                </p>
 	</div>
+
 	<div class="box">
 		<img src="/style/ico_64_folder_dev.png" alt="nightlies">
 		<h2><%block name="table_title"/></h2>
@@ -48,7 +52,7 @@ please refer to this site's <a href="http://download.haiku-os.org/">main page</a
                 <td>URLs to current images</td>
                 %for imageType in imageTypes:
                     <td>
-                        <a href="/nightly-images/${arch}/current-${imageType}">image</a>
+                        <a href="/nightly-images/${arch}/current-${imageType}">europe</a>
                         <span class="checksum">[<a href="/nightly-images/${arch}/current-${imageType}.sha256">checksum</a>]</span>
                     </td>
                 %endfor
@@ -60,8 +64,10 @@ please refer to this site's <a href="http://download.haiku-os.org/">main page</a
                     %for variant in row.variants:
                         <td>
                             %if variant:
-                                <a href="${variant}">image</a>
-                                <span class="checksum">[<a href="${variant}.sha256">checksum</a>]</span>
+                                %for loc,url in variant.items():
+                                  <a href="${url}">${loc}</a>
+                                %endfor
+                                  <span class="checksum">[<a href="${variant}.sha256">checksum</a>]</span>
                             %endif
                         </td>
                     %endfor
@@ -80,10 +86,9 @@ please refer to this site's <a href="http://download.haiku-os.org/">main page</a
 </div>
 
 <div id="footer">
-Copyright 2001 - 2014 Haiku, Inc. &#8212; Haiku&#174; and the
+Copyright 2001 - 2017 Haiku, Inc. &#8212; Haiku&#174; and the
 HAIKU logo&#174; are registered trademarks of
-<a href="http://www.haiku-inc.org">Haiku, Inc.</a> | Proudly Hosted by
-DreamHost.
+<a href="http://www.haiku-inc.org">Haiku, Inc.</a>
 </div>
 		</div>
 	</body>

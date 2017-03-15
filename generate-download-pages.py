@@ -13,6 +13,7 @@ from mako.lookup import TemplateLookup
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates/")
 ARCHIVE_DIR = "/srv/www/haikufiles/files/nightly-images"
+CDN_BASE = "http://nightly-7340.kxcdn.com/"
 
 ARM_IMAGE_TYPES = (
     ("mmc", "SD Card Image"),
@@ -104,7 +105,11 @@ def index_archives(variant, archive_dir):
         row.variants = []
         row.mtime = 0
         for variant in variant_columns:
-            row.variants.append(links[variant])
+            urls = {"europe": links[variant]}
+            if os.path.isfile(archive_dir + '/' + links[variant] + '.cdn'):
+                cdn_path = open(archive_dir + '/' + links[variant] + '.cdn', 'r').read()
+                urls['global'] = CDN_BASE + cdn_path
+            row.variants.append(urls)
             if not row.mtime:
                 mtime = os.path.getmtime(archive_dir + '/' + links[variant])
                 row.mtime = mtime - mtime % 86400
@@ -123,6 +128,7 @@ def index_archives(variant, archive_dir):
             for variant in row.variants:
                 os.remove(archive_dir + '/' + variant)
                 os.remove(archive_dir + '/' + variant + '.sha256')
+                os.remove(archive_dir + '/' + variant + '.cdn')
         else:
             #print row.revision, ':', row.mtime, ' ', difference, ' days older'
             filteredTable.append(row)
