@@ -1,17 +1,14 @@
 <%inherit file="base.html"/>
 
-<%block name="title">x86_64 - Unsupported Builds</%block>
+<%block name="title">Haiku 64-bit</%block>
 
 <%block name="description">
-		<p>
-x86_64 is an unsupported variant, as it lacks the ability to run
-GCC 2 binaries and on 32-bit Intel compatible CPUs. It is provided
-for development and testing purposes only. Releasing software that
-requires these unsupported builds is discouraged.
-		</p>
+                <p>
+The Haiku source is continually built by a dedicated machine. These "nightly
+images" are provided mainly for development and testing purposes. You can
+download and install these snapshots to check out the latest features
+and bugfixes, be aware though that they <strong>may be unstable</strong> at times.
+                </p>
 </%block>
 
-<%block name="table_title">Unsupported x86_64 Builds</%block>
-
-<%block name="archive_site_url">http://www.haiku-files.org/unsupported-builds/x86_64/</%block>
-
+<%block name="table_title">Supported x86_64 Builds</%block>

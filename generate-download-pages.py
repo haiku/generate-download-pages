@@ -19,29 +19,34 @@ ARM_IMAGE_TYPES = (
     ("mmc", "SD Card Image"),
 )
 
+PPC_IMAGE_TYPES = (
+    ("raw", "Raw Image"),
+    ("boot_cd", "Boot CD"),
+)
+
 IMAGE_TYPES = (
     # ("filename_type", "pretty type")
     ("anyboot", "Anyboot ISO"),
     ("raw", "Raw Image"),
-    #("cd", "Plain ISO"),
+    # ("cd", "Plain ISO"),
 )
 
 VARIANTS = (
     "arm",
     "m68k",
     "ppc",
-    "x86",
+#    "x86",
     "x86_64",
     "x86_gcc2_hybrid",
-    "x86_gcc2",
-    "x86_hybrid",
+#    "x86_gcc2",
+#    "x86_hybrid",
 )
 
 #
 # Common constants
 #
 
-RE_IMAGE_PATTERN = re.compile(r'.*(hrev[0-9]*)-([^-]*)-([^\.]*)\.zip$')
+RE_IMAGE_PATTERN = re.compile(r'.*(hrev[0-9]*)-([^-]*)-([^\.]*)\.(zip|tar\.xz)$')
 
 #
 # Process data for the html
@@ -58,12 +63,16 @@ def natural_sort_key(s, _nsre=re.compile('([0-9]+)')):
 def headers(variant):
     if variant == "arm":
         return list(q for _,q in ARM_IMAGE_TYPES)
+    if variant == "ppc":
+        return list(q for _,q in PPC_IMAGE_TYPES)
     return list(q for _,q in IMAGE_TYPES)
 
 
 def imageTypes(variant):
     if variant == "arm":
         return list(q for q,_ in ARM_IMAGE_TYPES)
+    if variant == "ppc":
+        return list(q for q,_ in PPC_IMAGE_TYPES)
     return list(q for q,_ in IMAGE_TYPES)
 
 
@@ -115,32 +124,34 @@ def index_archives(variant, archive_dir):
                 row.mtime = mtime - mtime % 86400
         table.append(row)
 
-    lastMtime = time.time()
-    minKeepCount = 50
-    minDifference = 2
-    dropCount = 0
-    keepCount = 0
-    filteredTable = []
-    for row in table:
-        difference = (lastMtime - row.mtime) / 86400
-        if (keepCount > minKeepCount and difference < minDifference):
-            dropCount += 1
-            for variant in row.variants:
-                os.remove(archive_dir + '/' + variant)
-                os.remove(archive_dir + '/' + variant + '.sha256')
-                os.remove(archive_dir + '/' + variant + '.cdn')
-        else:
-            #print row.revision, ':', row.mtime, ' ', difference, ' days older'
-            filteredTable.append(row)
-            lastMtime = row.mtime
-            keepCount += 1
-            if keepCount > minKeepCount:
-                minDifference *= 1.5
+    #lastMtime = time.time()
+    #minKeepCount = 50
+    #minDifference = 2
+    #dropCount = 0
+    #keepCount = 0
+    #filteredTable = []
+    #for row in table:
+    #    difference = (lastMtime - row.mtime) / 86400
+    #    if (keepCount > minKeepCount and difference < minDifference):
+    #        dropCount += 1
+    #        for variant in row.variants:
+    #    	if not variant or len(variant['europe']) == 0:
+    #                continue
+    #            os.remove(archive_dir + '/' + variant['europe'])
+    #            os.remove(archive_dir + '/' + variant['europe'] + '.sha256')
+    #    else:
+    #        #print row.revision, ':', row.mtime, ' ', difference, ' days older'
+    #        filteredTable.append(row)
+    #        lastMtime = row.mtime
+    #        keepCount += 1
+    #        if keepCount > minKeepCount:
+    #            minDifference *= 1.5
 
     #print 'kept ', keepCount, ' and dropped ', dropCount, ' nightlies'
 
     return {
-        'table' : filteredTable,
+#        'table' : filteredTable,
+        'table' : table,
         'currentImages' : currentImages,
     }
 
@@ -224,7 +235,20 @@ if __name__ == "__main__":
         out_f.close()
         os.rename(map_path + uniqueSuffix, map_path)
 
+        # write nginx rewrite map file for current images (has trailing semicolon)
+        map_path = os.path.join(args.archive_dir, variant, "currentImages.map.nginx.fragment")
+        out_f = open(map_path + uniqueSuffix, "w")
+        for key, value in result['currentImages'].iteritems():
+            out_f.write('/nightly-images/%s/current-%s /nightly-images/%s/%s;\n' % (variant, key, variant, value))
+            out_f.write('/nightly-images/%s/current-%s.sha256 /nightly-images/%s/%s.sha256;\n' % (variant, key, variant, value))
+        out_f.close()
+        os.rename(map_path + uniqueSuffix, map_path)
+
     # concatenate all fragments to full map file
     map_path = os.path.join(args.archive_dir, "currentImages.map")
     os.system('cd "%s"; cat */currentImages.map.fragment >%s' % (args.archive_dir, map_path + uniqueSuffix))
+    os.rename(map_path + uniqueSuffix, map_path)
+    # same for nginx
+    map_path = os.path.join(args.archive_dir, "currentImages.map.nginx")
+    os.system('cd "%s"; cat */currentImages.map.nginx.fragment >%s' % (args.archive_dir, map_path + uniqueSuffix))
     os.rename(map_path + uniqueSuffix, map_path)

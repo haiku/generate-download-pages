@@ -10,7 +10,7 @@
   <div id="wrapper">
    <div id="header">
     <div id="logo">
-    <a href="http://download.haiku-os.org/"><img src="/style/logo.png" alt="logo"></a>
+    <a href="http://download.haiku-os.org/"><img src="/style/haiku_logo_white.svg" alt="logo" style="height: 98px; width: 305px; margin: -5px 0 0 -15px; padding: 0 0 0px 3px;"></a>
     </div>
     <div id="links">
      <a href="http://www.haiku-os.org/"><img src="/style/icon_haiku_32.png" alt="Haiku Project" title="Haiku Project"></a>
@@ -30,7 +30,7 @@ For more information on missing packages, image and archive formats, etc.,
 please refer to this site's <a href="http://download.haiku-os.org/">main page</a>.
 		</p>
                 <p>
-Global CDN mirroring generously provided by <a href='http://keycdn.com' target="_BLANK"><img src=" https://logos.keycdn.com/keycdn-logo.png" style='float: none; width: 6em; margin: 2px; vertical-align: bottom;'></a>
+Global CDN mirroring generously provided by <a href='https://www.keycdn.com' target="_BLANK"><img src=" https://logos.keycdn.com/keycdn-logo.png" style='float: none; width: 6em; margin: 2px; vertical-align: bottom;'></a>
                 </p>
 	</div>
 
@@ -67,7 +67,7 @@ Global CDN mirroring generously provided by <a href='http://keycdn.com' target="
                                 %for loc,url in variant.items():
                                   <a href="${url}">${loc}</a>
                                 %endfor
-                                  <span class="checksum">[<a href="${variant}.sha256">checksum</a>]</span>
+                                  <span class="checksum">[<a href="${variant["europe"]}.sha256">checksum</a>]</span>
                             %endif
                         </td>
                     %endfor
@@ -77,18 +77,14 @@ Global CDN mirroring generously provided by <a href='http://keycdn.com' target="
 
         ${self.body()}
 
-	<div class="box-info">
-	Older images can be found <a href="<%block name="archive_site_url"/>">here</a>.
-	</div>
-
 	</div>
 
 </div>
 
 <div id="footer">
-Copyright 2001 - 2017 Haiku, Inc. &#8212; Haiku&#174; and the
+Copyright 2001 - 2018 Haiku, Inc. &#8212; Haiku&#174; and the
 HAIKU logo&#174; are registered trademarks of
-<a href="http://www.haiku-inc.org">Haiku, Inc.</a>
+<a href="http://www.haiku-inc.org">Haiku, Inc.</a> | CDN bandwidth provided by <a target="_BLANK" href="https://www.keycdn.com">KeyCDN</a>
 </div>
 		</div>
 	</body>
