@@ -3,7 +3,12 @@ from collections import defaultdict, OrderedDict, namedtuple
 import email.utils
 import os
 import re
+import sys
+import shutil
 import time
+
+import boto
+import boto.s3.connection
 
 from mako.lookup import TemplateLookup
 
@@ -12,8 +17,10 @@ from mako.lookup import TemplateLookup
 #
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates/")
-ARCHIVE_DIR = "/srv/www/haikufiles/files/nightly-images"
-CDN_BASE = "http://nightly-7340.kxcdn.com/"
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output/")
+S3_BUCKET = "nightly"
+S3_PATH = "/"
+S3_ENDPOINT = "cdn.haiku-os.org"
 
 ARM_IMAGE_TYPES = (
     ("mmc", "SD Card Image"),
@@ -49,16 +56,44 @@ VARIANTS = (
 RE_IMAGE_PATTERN = re.compile(r'.*(hrev[0-9]*)-([^-]*)-([^\.]*)\.(zip|tar\.xz)$')
 
 #
+# S3 Connection
+#
+
+#
 # Process data for the html
 #
 
 Image = namedtuple("Image", ['filename', 'revision', 'image_type'])
 Row = type("Row", (object,), {})
 
+def connect_s3(endpoint, key, secret):
+    return boto.connect_s3(
+        aws_access_key_id = key,
+        aws_secret_access_key = secret,
+        host = endpoint,
+        calling_format = boto.s3.connection.OrdinaryCallingFormat(),
+        )
+
+def locate_images_arch(s3_connection, arch):
+    bucket = s3_connection.get_bucket(S3_BUCKET, validate=True)
+    # Expected storage: <arch>/nighty-image.zip
+    s3files = [item.name for item in bucket.list()]
+    s3files.sort(reverse=True)
+
+    images = []
+    for s3file in s3files:
+        path_arch, filename = os.path.split(s3file)
+        if path_arch.lower() != arch.lower():
+            continue
+        m = RE_IMAGE_PATTERN.match(filename)
+        if m:
+            images.append(Image(filename, m.group(1), m.group(3)))
+    return images
+
+
 def natural_sort_key(s, _nsre=re.compile('([0-9]+)')):
     return [int(text) if text.isdigit() else text.lower()
             for text in re.split(_nsre, s)]
-
 
 def headers(variant):
     if variant == "arm":
@@ -76,16 +111,7 @@ def imageTypes(variant):
     return list(q for q,_ in IMAGE_TYPES)
 
 
-def index_archives(variant, archive_dir):
-    # reverse sort because we want the newest first
-    # use natural sorting from when we switch from 5 digit hrev to 6 digits
-    entries = sorted(os.listdir(archive_dir), key=natural_sort_key, reverse=True)
-
-    images = []
-    for entry in entries:
-        m = RE_IMAGE_PATTERN.match(entry)
-        if m:
-            images.append(Image(entry, m.group(1), m.group(3)))
+def index_archives(images, variant):
 
     # sort the images into a table-like structure that will be used to create the table
     variant_columns = imageTypes(variant)
@@ -106,6 +132,7 @@ def index_archives(variant, archive_dir):
         if image.image_type not in currentImages:
             currentImages[image.image_type] = image.filename
 
+    url = "https://" + S3_ENDPOINT + "/" + S3_BUCKET + "/" + variant + "/"
     # flatten into a table
     table = []
     for revision, links in content.items():
@@ -114,40 +141,9 @@ def index_archives(variant, archive_dir):
         row.variants = []
         row.mtime = 0
         for variant in variant_columns:
-            urls = {"europe": links[variant]}
-            if os.path.isfile(archive_dir + '/' + links[variant] + '.cdn'):
-                cdn_path = open(archive_dir + '/' + links[variant] + '.cdn', 'r').read()
-                urls['global'] = CDN_BASE + cdn_path
+            urls = {"europe": url + links[variant]}
             row.variants.append(urls)
-            if not row.mtime:
-                mtime = os.path.getmtime(archive_dir + '/' + links[variant])
-                row.mtime = mtime - mtime % 86400
         table.append(row)
-
-    #lastMtime = time.time()
-    #minKeepCount = 50
-    #minDifference = 2
-    #dropCount = 0
-    #keepCount = 0
-    #filteredTable = []
-    #for row in table:
-    #    difference = (lastMtime - row.mtime) / 86400
-    #    if (keepCount > minKeepCount and difference < minDifference):
-    #        dropCount += 1
-    #        for variant in row.variants:
-    #    	if not variant or len(variant['europe']) == 0:
-    #                continue
-    #            os.remove(archive_dir + '/' + variant['europe'])
-    #            os.remove(archive_dir + '/' + variant['europe'] + '.sha256')
-    #    else:
-    #        #print row.revision, ':', row.mtime, ' ', difference, ' days older'
-    #        filteredTable.append(row)
-    #        lastMtime = row.mtime
-    #        keepCount += 1
-    #        if keepCount > minKeepCount:
-    #            minDifference *= 1.5
-
-    #print 'kept ', keepCount, ' and dropped ', dropCount, ' nightlies'
 
     return {
 #        'table' : filteredTable,
@@ -183,8 +179,10 @@ def index_files_for_rss(archive_dir, limit=20):
 #
 
 parser = argparse.ArgumentParser(description="Generate index files for Haiku Nightly Images hosting")
-parser.add_argument('--archive-dir', dest='archive_dir', default=ARCHIVE_DIR, action='store',
-                    help="specify the directory with the images")
+parser.add_argument('--s3_endpoint', dest='s3endpoint', default=S3_ENDPOINT, action='store',
+    help='S3 endpoint holding nightly images')
+parser.add_argument('--s3_key', dest='s3key', default="", action='store', help='S3 key')
+parser.add_argument('--s3_secret', dest='s3secret', default="", action='store', help='S3 secret')
 parser.add_argument('variant', nargs="*", help="build the pages for the specified variants")
 
 if __name__ == "__main__":
@@ -205,12 +203,35 @@ if __name__ == "__main__":
 
     template_lookup = TemplateLookup(directories=[TEMPLATE_DIR])
 
+    # Populate static assets
+    if not os.path.isdir(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+    shutil.copy(os.path.join(TEMPLATE_DIR, "root", "index.html"), OUTPUT_DIR)
+
+    if not os.path.isdir(os.path.join(OUTPUT_DIR, "style")):
+        os.makedirs(os.path.join(OUTPUT_DIR, "style"))
+    shutil.rmtree(os.path.join(OUTPUT_DIR, "style"))
+    shutil.copytree(os.path.join(TEMPLATE_DIR, "style"), os.path.join(OUTPUT_DIR, "style"))
+
+    s3 = connect_s3(args.s3endpoint, args.s3key, args.s3secret)
+
     for variant in variants:
-        result = index_archives(variant, os.path.join(args.archive_dir, variant))
+        # locate images in s3 bucket
+        images = locate_images_arch(s3, variant)
+        result = index_archives(images, variant)
+
+        index_output = os.path.join(OUTPUT_DIR, variant)
+        rss_output = os.path.join(OUTPUT_DIR, variant, "rss")
+
+        # make result paths
+        if not os.path.isdir(index_output):
+            os.makedirs(index_output)
+        if not os.path.isdir(rss_output):
+            os.makedirs(rss_output)
 
         # index html
         template = template_lookup.get_template(variant + '.html')
-        index_path = os.path.join(args.archive_dir, variant, "index.html")
+        index_path = os.path.join(OUTPUT_DIR, variant, "index.html")
         out_f = open(index_path + uniqueSuffix, "w")
         out_f.write(template.render(headers=headers(variant), arch=variant, imageTypes=imageTypes(variant), table=result['table']))
         out_f.close()
@@ -218,16 +239,16 @@ if __name__ == "__main__":
 
         # rss
         template = template_lookup.get_template("rss.xml")
-        rss_path = os.path.join(args.archive_dir, variant, "rss", "atom.xml")
+        rss_path = os.path.join(OUTPUT_DIR, variant, "rss", "atom.xml")
         out_f = open(rss_path + uniqueSuffix, "w")
         out_f.write(template.render(arch=variant,
-                                    items=index_files_for_rss(os.path.join(args.archive_dir, variant)),
+                                    items=index_files_for_rss(os.path.join(OUTPUT_DIR, variant)),
                                     variant=variant))
         out_f.close()
         os.rename(rss_path + uniqueSuffix, rss_path)
 
         # write apache rewrite map file for current images
-        map_path = os.path.join(args.archive_dir, variant, "currentImages.map.fragment")
+        map_path = os.path.join(OUTPUT_DIR, variant, "currentImages.map.fragment")
         out_f = open(map_path + uniqueSuffix, "w")
         for key, value in result['currentImages'].iteritems():
             out_f.write('%s/current-%s %s/%s\n' % (variant, key, variant, value))
@@ -236,7 +257,7 @@ if __name__ == "__main__":
         os.rename(map_path + uniqueSuffix, map_path)
 
         # write nginx rewrite map file for current images (has trailing semicolon)
-        map_path = os.path.join(args.archive_dir, variant, "currentImages.map.nginx.fragment")
+        map_path = os.path.join(OUTPUT_DIR, variant, "currentImages.map.nginx.fragment")
         out_f = open(map_path + uniqueSuffix, "w")
         for key, value in result['currentImages'].iteritems():
             out_f.write('/nightly-images/%s/current-%s /nightly-images/%s/%s;\n' % (variant, key, variant, value))
@@ -245,10 +266,10 @@ if __name__ == "__main__":
         os.rename(map_path + uniqueSuffix, map_path)
 
     # concatenate all fragments to full map file
-    map_path = os.path.join(args.archive_dir, "currentImages.map")
-    os.system('cd "%s"; cat */currentImages.map.fragment >%s' % (args.archive_dir, map_path + uniqueSuffix))
+    map_path = os.path.join(OUTPUT_DIR, "currentImages.map")
+    os.system('cd "%s"; cat */currentImages.map.fragment >%s' % (OUTPUT_DIR, map_path + uniqueSuffix))
     os.rename(map_path + uniqueSuffix, map_path)
     # same for nginx
-    map_path = os.path.join(args.archive_dir, "currentImages.map.nginx")
-    os.system('cd "%s"; cat */currentImages.map.nginx.fragment >%s' % (args.archive_dir, map_path + uniqueSuffix))
+    map_path = os.path.join(OUTPUT_DIR, "currentImages.map.nginx")
+    os.system('cd "%s"; cat */currentImages.map.nginx.fragment >%s' % (OUTPUT_DIR, map_path + uniqueSuffix))
     os.rename(map_path + uniqueSuffix, map_path)

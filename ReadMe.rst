@@ -9,7 +9,7 @@ This is a script that should be run after each file upload to the nightly-images
 Requirements
 ------------
 
-The requirements are python and the Mako_ library.
+The requirements are python, the Mako_ library, and boto (for s3)
 
 Assumptions
 -----------

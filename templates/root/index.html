@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html><head>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+  <link rel="stylesheet" type="text/css" href="style/style.css" title="default">
+
+  <link rel="shortcut icon" href="favicon.png">
+  <title>Haiku Downloads</title></head><body>
+  <div id="wrapper">
+   <div id="header">
+    <div id="logo">
+    <a href="http://download.haiku-os.org/"><img src="style/haiku_logo_white.svg" alt="logo" style="height: 98px; width: 305px; margin: -5px 0 0 -15px; padding: 0 0 0px 3px;"></a>
+    </div>
+    <div id="links">
+     <a href="http://www.haiku-os.org/"><img src="style/icon_haiku_32.png" alt="Haiku Project" title="Haiku Project"></a>
+     <a href="http://dev.haiku-os.org/"><img src="style/icon_bug_tracker_32.png" alt="Haiku's Bug Tracker" title="Haiku's Bug Tracker"></a>
+     <img src="style/top-link-separator.png" alt="sep" style="padding: 0pt 10px;">
+     <a href="http://www.haiku-os.org/contact"><img src="style/icon_32_mail.png" alt="contact" title="Contact the Haiku Project"></a>
+     <a href="http://www.haiku-os.org/community/donating_to_haiku"><img src="style/icon_32_donate.png" alt="donate" title="Make a donation to the Haiku Project"></a>
+    </div>
+   </div>
+   <div id="menu">
+   </div>
+
+<div id="content">
+<div class="box">
+	<p>
+To install Haiku, we offer <strong>stable</strong> release builds as well as <strong>nightly</strong>
+builds which are continually built by a cluster of dedicated machines from the <a href="http://cgit.haiku-os.org/haiku/">latest Haiku source code</a>.
+	</p>
+	</div>
+<!--
+<hr/>
+	<div class="box">
+		<img src="style/icon_missing_64.png" alt="icon">
+		<h2>Missing Packages</h2>
+		<p>
+To keep the file size down, nightly images lack a few optional packages
+included in regular releases, for example Python, WonderBrush, Subversion etc.<br />
+You can install these and many more packages with the HaikuDepot application.
+		</p>
+	</div>
+-->
+<!--
+	<div class="box">
+		<img src="style/icon_images_64.png" alt="icon">
+		<h2>Image File Formats</h2>
+		<p>
+The nightly images are provided in different formats and
+their uses are detailed below. The following guides are useful:
+<a href="http://www.haiku-os.org/get-haiku/burn-cd">Burning to CD</a>,
+<a href="http://www.haiku-os.org/guides/installing/making_haiku_usb_stick">Writing to USB stick</a>
+and <a href="http://www.haiku-os.org/guides/virtualizing/virtualbox#part_vmimage">Using VirtualBox</a>.
+		</p>
+		<ul>
+			<li><strong>Anyboot ISO</strong> - <i>(recommended)</i> Live installation media that can be burned to CDs/DVDs,
+				written directly to USB flash drives, or used with virtualization.</li>
+			<li><strong>Raw Image</strong> - A raw disk image of Haiku which can be written directly to
+				disks or USB sticks (note: considered obsolete, in favor of anyboot).</li>
+		</ul>
+	</div>
+-->
+<hr/>
+
+
+<!--
+	<div class="box">
+		<img src="style/ico_64_folder_haiku.png" alt="alpha4">
+		<h2>Latest Stable Release</h2>
+		<p>
+Official releases leading up to and including R1 Final are distributed only as
+a GCC 2 Hybrid for the x86 architecture.
+Applications made for Haiku should be tested on the latest available stable release.
+		</p>
+
+		<p>
+With the release of <strong>Haiku R1 Alpha 4</strong>, there now are official
+image files available. Please head over to
+<a href="http://www.haiku-os.org/get-haiku">the download page at the Haiku website</a>
+to get a Haiku image from one of our mirrors.
+-->
+<!--
+Additionally, a <a href="http://www.haiku-inc.org/order-disc.html">commemorative CD</a> may be ordered from Haiku, Inc.
+		</p>
+	</div>
+<hr/>
+-->
+	<div class="box">
+		<img src="style/ico_64_folder_dev.png" alt="nightlies">
+		<h2>Nightly Images</h2>
+<!--
+		<p>
+			These are currently unavailable.
+			Please get an official Haiku R1 Alpha 4 image as described above.
+			Nightlies will become available again at a later stage.
+		</p>
+-->
+		<p>
+
+These "nightly images" are provided mainly for development and testing purposes.
+<br/>
+While we do try to keep our code in a working state at all times, these are not
+considered to be stable and may be broken in various ways at any given point in
+time.
+		</p>
+
+<div class="box-info">
+To keep the file size down, nightly images lack some extra bundled software included in regular releases.
+You can install these and many more packages with the HaikuDepot application.
+</div>
+
+		<p>
+<hr />
+<h2>Supported variants</h2>
+These images represent the official architecture targets.
+Developers who choose to release software for Haiku are encouraged
+to provide a build for each of these releases.
+		</p>
+		<table><tr><td>
+		<ul>
+			<li><strong>Haiku 32-bit Hybrid</strong> <span style='font-size: 0.7em;'>(Compatible, Stable)</span><ul>
+				<li><strong>Architecture:</strong> x86</li>
+				<li><strong>BeOS Binary Compatibility:</strong> Yes</li>
+				<li><strong>Compiler:</strong> gcc 2.95.3 + gcc 7.3.0</li>
+				<li><strong>Download:</strong> <a href="/x86_gcc2_hybrid/">nightly images</a>
+			<a href="/x86_gcc2_hybrid/rss/atom.xml"><img class="inline" src="/style/feed_16.png" alt="Haiku Development RSS feed" title="Haiku Development RSS feed"></a></li>
+			</ul></li>
+		</ul>
+		</td><td>
+		<ul>
+			<li><strong>Haiku 64-bit</strong> <span style='font-size: 0.7em;'>(Modern, Fast)</span><ul>
+				<li><strong>Architecture:</strong> x86_64</li>
+				<li><strong>BeOS Binary Compatibility:</strong> No</li>
+				<li><strong>Compiler:</strong> gcc 7.3.0</li>
+				<li><strong>Download:</strong> <a href="/x86_64/">nightly images</a>
+			<a href="/x86_64/rss/atom.xml"><img class="inline" src="/style/feed_16.png" alt="Haiku Development RSS feed" title="Haiku Development RSS feed"></a></li>
+			</ul></li>
+		</ul>
+		</td></tr>
+		</table>
+<p>
+<hr/>
+<h2>Unsupported variants</h2>
+These images are provided for development and testing purposes only.
+The non-x86 builds are in the early stages of development. If
+you're lucky, those non-x86 builds will boot just enough to crash.</p>
+	<div align="center"><p>
+<strong>All of these variant builds are unsupported.<br />
+Releasing software that requires these unsupported builds is discouraged.</strong>
+	</p></div>
+	<p style='font-size: 14px; text-align: center;'>
+<!--
+		<b>x86 based unsupported variants</b><br/>
+		<i>
+		<a href="/x86_gcc2">x86 GCC 2</a><a href="/x86_gcc2/rss/atom.xml"><img class="inline" src="/style/feed_16.png" alt="Unsupported x86-gcc2 RSS feed" title="Unsupported x86-gcc2 RSS feed"></a> |
+		<a href="/x86">x86 GCC 5</a><a href="/x86/rss/atom.xml"><img class="inline" src="/style/feed_16.png" alt="Unsupported x86-gcc5 RSS feed" title="Unsupported x86-gcc5 RSS feed"></a>
+		<a href="/x86_hybrid">x86 GCC 5 Hybrid</a><a href="/x86_hybrid/rss/atom.xml"><img class="inline" src="/style/feed_16.png" alt="Unsupported x86-gcc5hybrid RSS feed" title="Unsupported x86-gcc5hybrid RSS feed"></a>
+		</i>
+		<br/>
+-->
+		<b>non-x86 unsupported variants</b><br/>
+		<i>
+		<a href="/arm/">ARM</a><a href="/arm/rss/atom.xml"><img class="inline" src="/style/feed_16.png" alt="Unsupported ARM RSS feed" title="Unsupported ARM RSS feed"></a> |
+		<a href="/m68k/">m68k</a><a href="/m68k/rss/atom.xml"><img class="inline" src="/style/feed_16.png" alt="Unsupported m68k RSS feed" title="Unsupported m68k RSS feed"></a> |
+		<a href="/ppc/">PowerPC</a><a href="/ppc/rss/atom.xml"><img class="inline" src="/style/feed_16.png" alt="Unsupported PowerPC RSS feed" title="Unsupported PowerPC RSS feed"></a>
+		</i>
+	</p>
+	</div>
+</div>
+
+<div id="footer">&copy; 2001-2017 Haiku, Inc. &#8212; Haiku&#174; and
+	the HAIKU logo&#174; are registered trademarks of <a href="http://www.haiku-inc.org">Haiku, Inc.</a><br/>
+	BeOS is a trademark of <a href="https://www.access-company.com/" target="_BLANK">ACCESS Co., Ltd.</a>
+	<!--
+<p><img class="inline" src="/style/feed_16.png" alt="Haiku Files RSS feeds" title="Haiku Files RSS feeds">
+	<a href="/rss">x86 GCC 2 Hybrid (Supported)</a> |
+	<a href="/x86-gcc2/rss">x86 GCC 2</a> |
+	<a href="/x86-gcc5/rss">x86 GCC 5</a> |
+	<a href="/x86-gcc5hybrid/rss">x86 GCC 5 Hybrid</a> |
+	<a href="/arm/rss">ARM</a> |
+	<a href="/m68k/rss">m68k</a> |
+	<a href="/ppc/rss">PowerPC</a></p>
+	-->
+</div>
+		</div>
+	</body>
+</html>

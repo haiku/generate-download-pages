@@ -29,9 +29,6 @@
 For more information on missing packages, image and archive formats, etc.,
 please refer to this site's <a href="http://download.haiku-os.org/">main page</a>.
 		</p>
-                <p>
-Global CDN mirroring generously provided by <a href='https://www.keycdn.com' target="_BLANK"><img src=" https://logos.keycdn.com/keycdn-logo.png" style='float: none; width: 6em; margin: 2px; vertical-align: bottom;'></a>
-                </p>
 	</div>
 
 	<div class="box">
@@ -45,16 +42,6 @@ Global CDN mirroring generously provided by <a href='https://www.keycdn.com' tar
                 <th>Revision</th>
                 %for header in headers:
                     <th>${header}</th>
-                %endfor
-            </tr>
-
-            <tr>
-                <td>URLs to current images</td>
-                %for imageType in imageTypes:
-                    <td>
-                        <a href="/nightly-images/${arch}/current-${imageType}">europe</a>
-                        <span class="checksum">[<a href="/nightly-images/${arch}/current-${imageType}.sha256">checksum</a>]</span>
-                    </td>
                 %endfor
             </tr>
 
