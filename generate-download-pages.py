@@ -7,6 +7,11 @@ import sys
 import shutil
 import time
 
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+
 import boto
 import boto.s3.connection
 
@@ -20,7 +25,8 @@ TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templat
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output/")
 S3_BUCKET = "nightly"
 S3_PATH = "/"
-S3_ENDPOINT = "cdn.haiku-os.org"
+S3_PUBLIC = "https://cdn.haiku-os.org"
+S3_ENDPOINT = ""
 
 ARM_IMAGE_TYPES = (
     ("mmc", "SD Card Image"),
@@ -67,10 +73,12 @@ Image = namedtuple("Image", ['filename', 'revision', 'image_type'])
 Row = type("Row", (object,), {})
 
 def connect_s3(endpoint, key, secret):
+    url_object = urlparse(endpoint)
     return boto.connect_s3(
         aws_access_key_id = key,
         aws_secret_access_key = secret,
-        host = endpoint,
+        host = url_object.netloc,
+        is_secure = url_object.scheme.startswith('https'),
         calling_format = boto.s3.connection.OrdinaryCallingFormat(),
         )
 
@@ -132,7 +140,7 @@ def index_archives(images, variant):
         if image.image_type not in currentImages:
             currentImages[image.image_type] = image.filename
 
-    url = "https://" + S3_ENDPOINT + "/" + S3_BUCKET + "/" + variant + "/"
+    url = S3_PUBLIC + "/" + S3_BUCKET + "/" + variant + "/"
     # flatten into a table
     table = []
     for revision, links in content.items():
