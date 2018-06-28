@@ -77,7 +77,7 @@ def connect_s3(endpoint, key, secret):
     return boto.connect_s3(
         aws_access_key_id = key,
         aws_secret_access_key = secret,
-        host = url_object.netloc,
+        host = url_object.hostname,
         port = url_object.port,
         is_secure = url_object.scheme.startswith('https'),
         calling_format = boto.s3.connection.OrdinaryCallingFormat(),
