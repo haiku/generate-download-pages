@@ -1,6 +1,7 @@
 import argparse
 from collections import defaultdict, OrderedDict, namedtuple
 import email.utils
+import toml
 import os
 import re
 import sys
@@ -23,10 +24,8 @@ from mako.lookup import TemplateLookup
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates/")
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output/")
-S3_BUCKET = "nightly"
-S3_PATH = "/"
-S3_PUBLIC = "https://cdn.haiku-os.org"
-S3_ENDPOINT = ""
+
+S3_ENDPOINT_CONFIG = "nightly-s3.toml"
 
 ARM_IMAGE_TYPES = (
     ("mmc", "SD Card Image"),
@@ -83,8 +82,8 @@ def connect_s3(endpoint, key, secret):
         calling_format = boto.s3.connection.OrdinaryCallingFormat(),
         )
 
-def locate_images_arch(s3_connection, arch):
-    bucket = s3_connection.get_bucket(S3_BUCKET, validate=True)
+def locate_images_arch(s3_connection, bucket, arch):
+    bucket = s3_connection.get_bucket(bucket, validate=True)
     # Expected storage: <arch>/nighty-image.zip
     s3files = [item.name for item in bucket.list()]
     s3files.sort(reverse=True)
@@ -120,37 +119,55 @@ def imageTypes(variant):
     return list(q for q,_ in IMAGE_TYPES)
 
 
-def index_archives(images, variant):
+def index_archives(config, variant):
 
     # sort the images into a table-like structure that will be used to create the table
-    variant_columns = imageTypes(variant)
+    type_columns = imageTypes(variant)
     content = OrderedDict()
 
     # populate a dict with the newest entry for each image type
     currentImages = {}
+    locations = config.keys()
+    revisions = []
 
-    for image in images:
-        if image.image_type not in variant_columns:
-            continue
+    for location, info in config.items():
+        print("Parsing " + variant + " for " + location + "...")
 
-        if image.revision not in content.keys():
-            content[image.revision] = defaultdict(str)
+        # locate images in s3 bucket
+        s3 = connect_s3(info['s3_endpoint'], info['s3_key'], info['s3_secret'])
+        images = locate_images_arch(s3, info['s3_bucket'], variant)
 
-        content[image.revision][image.image_type] = image.filename
+        if location not in content.keys():
+            content[location] = defaultdict(str)
 
-        if image.image_type not in currentImages:
-            currentImages[image.image_type] = image.filename
+        for image in images:
+            if image.image_type not in type_columns:
+                continue
 
-    url = S3_PUBLIC + "/" + S3_BUCKET + "/" + variant + "/"
+            if image.revision not in content.keys():
+                content[location][image.revision] = defaultdict(str)
+
+            content[location][image.revision][image.image_type] = image.filename
+            if image.revision not in revisions:
+                revisions.append(image.revision)
+
+            if image.image_type not in currentImages:
+                currentImages[image.image_type] = image.filename
+
     # flatten into a table
     table = []
-    for revision, links in content.items():
+    for revision in revisions:
         row = Row()
         row.revision = revision
         row.variants = []
         row.mtime = 0
-        for variant in variant_columns:
-            urls = {"europe": url + links[variant]}
+        for imagetype in type_columns:
+            urls = {}
+            for location in locations:
+                local_config = config[location]
+                local_info = content[location]
+                prefix = local_config['public_url'] + '/' + local_config['s3_bucket'] + '/' + variant + '/'
+                urls.update({location: prefix + local_info[revision][imagetype]})
             row.variants.append(urls)
         table.append(row)
 
@@ -188,14 +205,13 @@ def index_files_for_rss(archive_dir, limit=20):
 #
 
 parser = argparse.ArgumentParser(description="Generate index files for Haiku Nightly Images hosting")
-parser.add_argument('--s3_endpoint', dest='s3endpoint', default=S3_ENDPOINT, action='store',
-    help='S3 endpoint holding nightly images')
-parser.add_argument('--s3_key', dest='s3key', default="", action='store', help='S3 key')
-parser.add_argument('--s3_secret', dest='s3secret', default="", action='store', help='S3 secret')
+parser.add_argument('--config', dest='config_file', default=S3_ENDPOINT_CONFIG, action='store',
+    help='toml document of known s3 buckets')
 parser.add_argument('variant', nargs="*", help="build the pages for the specified variants")
 
 if __name__ == "__main__":
     args = parser.parse_args()
+    config = toml.load(args.config_file)
 
     uniqueSuffix = '.' + str(os.getpid())
 
@@ -222,13 +238,8 @@ if __name__ == "__main__":
     shutil.rmtree(os.path.join(OUTPUT_DIR, "style"))
     shutil.copytree(os.path.join(TEMPLATE_DIR, "style"), os.path.join(OUTPUT_DIR, "style"))
 
-    s3 = connect_s3(args.s3endpoint, args.s3key, args.s3secret)
 
     for variant in variants:
-        # locate images in s3 bucket
-        images = locate_images_arch(s3, variant)
-        result = index_archives(images, variant)
-
         index_output = os.path.join(OUTPUT_DIR, variant)
         rss_output = os.path.join(OUTPUT_DIR, variant, "rss")
 
@@ -237,6 +248,8 @@ if __name__ == "__main__":
             os.makedirs(index_output)
         if not os.path.isdir(rss_output):
             os.makedirs(rss_output)
+
+        result = index_archives(config, variant)
 
         # index html
         template = template_lookup.get_template(variant + '.html')
@@ -269,8 +282,8 @@ if __name__ == "__main__":
         map_path = os.path.join(OUTPUT_DIR, variant, "currentImages.map.nginx.fragment")
         out_f = open(map_path + uniqueSuffix, "w")
         for key, value in result['currentImages'].iteritems():
-            out_f.write('/nightly-images/%s/current-%s /nightly-images/%s/%s;\n' % (variant, key, variant, value))
-            out_f.write('/nightly-images/%s/current-%s.sha256 /nightly-images/%s/%s.sha256;\n' % (variant, key, variant, value))
+            out_f.write('/%s/current-%s /nightly-images/%s/%s;\n' % (variant, key, variant, value))
+            out_f.write('/%s/current-%s.sha256 /nightly-images/%s/%s.sha256;\n' % (variant, key, variant, value))
         out_f.close()
         os.rename(map_path + uniqueSuffix, map_path)
 
