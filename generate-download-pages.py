@@ -131,11 +131,14 @@ def index_archives(config, variant):
     revisions = []
 
     for location, info in config.items():
-        print("Parsing " + variant + " for " + location + "...")
+        images = {}
 
-        # locate images in s3 bucket
-        s3 = connect_s3(info['s3_endpoint'], info['s3_key'], info['s3_secret'])
-        images = locate_images_arch(s3, info['s3_bucket'], variant)
+        if 's3_endpoint' in info:
+            # locate images in s3 bucket
+            print("Probe s3 bucket in " + location + " for " + variant + "...")
+            s3 = connect_s3(info['s3_endpoint'], info['s3_key'], info['s3_secret'])
+            images = locate_images_arch(s3, info['s3_bucket'], variant)
+        # TODO: More endpoint types?
 
         if location not in content.keys():
             content[location] = defaultdict(str)
