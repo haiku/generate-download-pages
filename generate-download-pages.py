@@ -164,8 +164,12 @@ def index_archives(config, variant):
         for imagetype in type_columns:
             urls = {}
             for location in locations:
+                if location not in content:
+                    continue
                 local_config = config[location]
                 local_info = content[location]
+                if revision not in local_info:
+                    continue
                 prefix = local_config['public_url'] + '/' + local_config['s3_bucket'] + '/' + variant + '/'
                 urls.update({location: prefix + local_info[revision][imagetype]})
             row.variants.append(urls)
