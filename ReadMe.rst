@@ -11,11 +11,19 @@ Requirements
 
 The requirements are python, the Mako_ library, and boto (for s3)
 
-Assumptions
------------
+Config
+------------
 
-This script makes many assumptions on the directory layout of the images, and the requested output. Best would be to
-follow the contents of `generate-download-pages.py` to see which assumptions are made.
+The script `generate-download-pages.py` reads a toml configuration to gain insight about s3 buckets that
+contain nightly images. A sample is provided in `config-sample.toml`.
 
+Each section gets deposited as a location in the index.html (europe, US, etc)
+
+Bucket Layout
+------------
+
+The nightly images in the s3 buckets are generally laid out as follows:
+
+(bucket)/(variant)/haiku-nightly-(hrevtag)-(variant)-(type).(zip|tar.xz)
 
 .. _Mako: http://www.makotemplates.org
