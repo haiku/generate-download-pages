@@ -141,14 +141,14 @@ def index_archives(config, variant):
         # TODO: More endpoint types?
 
         if location not in content.keys():
-            content[location] = defaultdict(str)
+            content[location] = {}
 
         for image in images:
             if image.image_type not in type_columns:
                 continue
 
-            if image.revision not in content.keys():
-                content[location][image.revision] = defaultdict(str)
+            if image.revision not in content[location].keys():
+                content[location][image.revision] = {}
 
             content[location][image.revision][image.image_type] = image.filename
             if image.revision not in revisions:
@@ -160,21 +160,29 @@ def index_archives(config, variant):
     # flatten into a table
     table = []
     for revision in revisions:
+        # Each Row has a revision
         row = Row()
         row.revision = revision
         row.variants = []
         row.mtime = 0
         for imagetype in type_columns:
+            # Each row has an image type
             urls = {}
             for location in locations:
-                if location not in content:
+                # Each row has a location
+                if location not in content.keys():
                     continue
                 local_config = config[location]
                 local_info = content[location]
-                if revision not in local_info:
+                if revision not in local_info.keys():
+                    # Location doesn't have this revision
+                    continue
+                local_revision = local_info[revision]
+                if imagetype not in local_revision.keys():
+                    # Location doesn't have this imagetype
                     continue
                 prefix = local_config['public_url'] + '/' + local_config['s3_bucket'] + '/' + variant + '/'
-                urls.update({location: prefix + local_info[revision][imagetype]})
+                urls.update({location: prefix + local_revision[imagetype]})
             row.variants.append(urls)
         table.append(row)
 
