@@ -246,6 +246,8 @@ if __name__ == "__main__":
     # Populate static assets
     if not os.path.isdir(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
+    if not os.path.isdir(os.path.join(OUTPUT_DIR, "nightly-images")):
+        os.makedirs(os.path.join(OUTPUT_DIR, "nightly-images"))
     shutil.copy(os.path.join(TEMPLATE_DIR, "root", "index.html"), OUTPUT_DIR)
 
     if not os.path.isdir(os.path.join(OUTPUT_DIR, "style")):
@@ -255,8 +257,8 @@ if __name__ == "__main__":
 
 
     for variant in variants:
-        index_output = os.path.join(OUTPUT_DIR, variant)
-        rss_output = os.path.join(OUTPUT_DIR, variant, "rss")
+        index_output = os.path.join(OUTPUT_DIR, "nightly-images", variant)
+        rss_output = os.path.join(OUTPUT_DIR, "nightly-images", variant, "rss")
 
         # make result paths
         if not os.path.isdir(index_output):
@@ -268,7 +270,7 @@ if __name__ == "__main__":
 
         # index html
         template = template_lookup.get_template(variant + '.html')
-        index_path = os.path.join(OUTPUT_DIR, variant, "index.html")
+        index_path = os.path.join(OUTPUT_DIR, "nightly-images", variant, "index.html")
         out_f = open(index_path + uniqueSuffix, "w")
         out_f.write(template.render(headers=headers(variant), arch=variant, imageTypes=imageTypes(variant), table=result['table']))
         out_f.close()
@@ -276,37 +278,10 @@ if __name__ == "__main__":
 
         # rss
         template = template_lookup.get_template("rss.xml")
-        rss_path = os.path.join(OUTPUT_DIR, variant, "rss", "atom.xml")
+        rss_path = os.path.join(OUTPUT_DIR, "nightly-images", variant, "rss", "atom.xml")
         out_f = open(rss_path + uniqueSuffix, "w")
         out_f.write(template.render(arch=variant,
-                                    items=index_files_for_rss(os.path.join(OUTPUT_DIR, variant)),
+                                    items=index_files_for_rss(os.path.join(OUTPUT_DIR, "nightly-images", variant)),
                                     variant=variant))
         out_f.close()
         os.rename(rss_path + uniqueSuffix, rss_path)
-
-        # write apache rewrite map file for current images
-        map_path = os.path.join(OUTPUT_DIR, variant, "currentImages.map.fragment")
-        out_f = open(map_path + uniqueSuffix, "w")
-        for key, value in result['currentImages'].iteritems():
-            out_f.write('%s/current-%s %s/%s\n' % (variant, key, variant, value))
-            out_f.write('%s/current-%s.sha256 %s/%s.sha256\n' % (variant, key, variant, value))
-        out_f.close()
-        os.rename(map_path + uniqueSuffix, map_path)
-
-        # write nginx rewrite map file for current images (has trailing semicolon)
-        map_path = os.path.join(OUTPUT_DIR, variant, "currentImages.map.nginx.fragment")
-        out_f = open(map_path + uniqueSuffix, "w")
-        for key, value in result['currentImages'].iteritems():
-            out_f.write('/%s/current-%s /nightly-images/%s/%s;\n' % (variant, key, variant, value))
-            out_f.write('/%s/current-%s.sha256 /nightly-images/%s/%s.sha256;\n' % (variant, key, variant, value))
-        out_f.close()
-        os.rename(map_path + uniqueSuffix, map_path)
-
-    # concatenate all fragments to full map file
-    map_path = os.path.join(OUTPUT_DIR, "currentImages.map")
-    os.system('cd "%s"; cat */currentImages.map.fragment >%s' % (OUTPUT_DIR, map_path + uniqueSuffix))
-    os.rename(map_path + uniqueSuffix, map_path)
-    # same for nginx
-    map_path = os.path.join(OUTPUT_DIR, "currentImages.map.nginx")
-    os.system('cd "%s"; cat */currentImages.map.nginx.fragment >%s' % (OUTPUT_DIR, map_path + uniqueSuffix))
-    os.rename(map_path + uniqueSuffix, map_path)
