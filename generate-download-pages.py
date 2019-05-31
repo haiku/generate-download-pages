@@ -1,7 +1,7 @@
 import argparse
 from collections import defaultdict, OrderedDict, namedtuple
 import email.utils
-import toml
+import hvac
 import os
 import re
 import sys
@@ -22,10 +22,11 @@ from mako.lookup import TemplateLookup
 # Configuration
 #
 
+VAULT_ENGINE_NAME = "s3"
+VAULT_OBJECT_PREFIX = "nightly"
+
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates/")
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output/")
-
-S3_ENDPOINT_CONFIG = "nightly-s3.toml"
 
 ARM_IMAGE_TYPES = (
     ("mmc", "SD Card Image"),
@@ -60,9 +61,11 @@ VARIANTS = (
 
 RE_IMAGE_PATTERN = re.compile(r'.*(hrev[0-9]*)-([^-]*)-([^\.]*)\.(zip|tar\.xz)$')
 
+
 #
-# S3 Connection
+# Vault Cache
 #
+CACHE = {}
 
 #
 # Process data for the html
@@ -71,19 +74,43 @@ RE_IMAGE_PATTERN = re.compile(r'.*(hrev[0-9]*)-([^-]*)-([^\.]*)\.(zip|tar\.xz)$'
 Image = namedtuple("Image", ['filename', 'revision', 'image_type'])
 Row = type("Row", (object,), {})
 
+def vault_get(client, name, key):
+    result = client.read("{}/{}/{}".format(VAULT_ENGINE_NAME, VAULT_OBJECT_PREFIX, name))
+    if result is None:
+        print("Warning: {}/{}/{} is missing!".format(VAULT_ENGINE_NAME, VAULT_OBJECT_PREFIX, name))
+        return None
+    else:
+        return result['data'][key]
+
+def vault_list(client, name):
+    if name == None:
+        result = client.list('{}/{}'.format(VAULT_ENGINE_NAME, VAULT_OBJECT_PREFIX))
+    else:
+        result = client.list('{}/{}/{}'.format(VAULT_ENGINE_NAME, VAULT_OBJECT_PREFIX, name))
+    if result == None:
+        return None
+    return result['data']['keys']
+
 def connect_s3(endpoint, key, secret):
     url_object = urlparse(endpoint)
-    return boto.connect_s3(
-        aws_access_key_id = key,
-        aws_secret_access_key = secret,
-        host = url_object.hostname,
-        port = url_object.port,
-        is_secure = url_object.scheme.startswith('https'),
-        calling_format = boto.s3.connection.OrdinaryCallingFormat(),
-        )
+    try:
+        return boto.connect_s3(
+            aws_access_key_id = key,
+            aws_secret_access_key = secret,
+            host = url_object.hostname,
+            port = url_object.port,
+            is_secure = url_object.scheme.startswith('https'),
+            calling_format = boto.s3.connection.OrdinaryCallingFormat(),
+            )
+    except:
+        return None
 
 def locate_images_arch(s3_connection, bucket, arch):
-    bucket = s3_connection.get_bucket(bucket, validate=True)
+    try:
+        bucket = s3_connection.get_bucket(bucket, validate=True)
+    except:
+        return None
+
     # Expected storage: <arch>/nighty-image.zip
     s3files = [item.name for item in bucket.list()]
     s3files.sort(reverse=True)
@@ -119,7 +146,17 @@ def imageTypes(variant):
     return list(q for q,_ in IMAGE_TYPES)
 
 
-def index_archives(config, variant):
+def index_archives(options, variant):
+    print("using vault at {}".format(options.vault_endpoint))
+    client = hvac.Client(url=options.vault_endpoint)
+    if not client.is_authenticated():
+        print("Error: Unable to authenticate to Vault!")
+        sys.exit()
+
+    regions = vault_list(client, None)
+    if regions == None:
+        print("Error: No regions found in Vault! {}/{}".format(VAULT_ENGINE_NAME, VAULT_OBJECT_PREFIX))
+        sys.exit()
 
     # sort the images into a table-like structure that will be used to create the table
     type_columns = imageTypes(variant)
@@ -127,30 +164,43 @@ def index_archives(config, variant):
 
     # populate a dict with the newest entry for each image type
     currentImages = {}
-    locations = config.keys()
     revisions = []
 
-    for location, info in config.items():
+    for region in regions:
         images = {}
+        endpoint = vault_get(client, region, "endpoint")
+        bucket = vault_get(client, region, "bucket")
+        key = vault_get(client, region, "key")
+        secret = vault_get(client, region, "secret")
+        public_url = vault_get(client, region, "public_url")
 
-        if 's3_endpoint' in info:
-            # locate images in s3 bucket
-            print("Probe s3 bucket in " + location + " for " + variant + "...")
-            s3 = connect_s3(info['s3_endpoint'], info['s3_key'], info['s3_secret'])
-            images = locate_images_arch(s3, info['s3_bucket'], variant)
-        # TODO: More endpoint types?
+        if endpoint == None or bucket == None or key == None or secret == None:
+            print("Skipping " + region + " region. Incomplete s3 info!")
+            continue
 
-        if location not in content.keys():
-            content[location] = {}
+        s3 = connect_s3(endpoint, key, secret)
+        if s3 == None:
+            print("Warning: {} region s3 is unavailable. Skipping.".format(region))
+            continue
+
+        images = locate_images_arch(s3, bucket, variant)
+        if images == None:
+            print("Warning: {} region s3 is unavailable. Skipping.".format(region))
+            continue
+
+        print("Probe s3 bucket in " + region + " for " + variant + "...")
+
+        if region not in content.keys():
+            content[region] = {}
 
         for image in images:
             if image.image_type not in type_columns:
                 continue
 
-            if image.revision not in content[location].keys():
-                content[location][image.revision] = {}
+            if image.revision not in content[region].keys():
+                content[region][image.revision] = {}
 
-            content[location][image.revision][image.image_type] = image.filename
+            content[region][image.revision][image.image_type] = image.filename
             if image.revision not in revisions:
                 revisions.append(image.revision)
 
@@ -168,12 +218,11 @@ def index_archives(config, variant):
         for imagetype in type_columns:
             # Each row has an image type
             urls = {}
-            for location in locations:
-                # Each row has a location
-                if location not in content.keys():
+            for region in regions:
+                # Each row has a region
+                if region not in content.keys():
                     continue
-                local_config = config[location]
-                local_info = content[location]
+                local_info = content[region]
                 if revision not in local_info.keys():
                     # Location doesn't have this revision
                     continue
@@ -181,8 +230,8 @@ def index_archives(config, variant):
                 if imagetype not in local_revision.keys():
                     # Location doesn't have this imagetype
                     continue
-                prefix = local_config['public_url'] + '/' + local_config['s3_bucket'] + '/' + variant + '/'
-                urls.update({location: prefix + local_revision[imagetype]})
+                prefix = public_url + '/' + bucket + '/' + variant + '/'
+                urls.update({region: prefix + local_revision[imagetype]})
             row.variants.append(urls)
         table.append(row)
 
@@ -220,13 +269,12 @@ def index_files_for_rss(archive_dir, limit=20):
 #
 
 parser = argparse.ArgumentParser(description="Generate index files for Haiku Nightly Images hosting")
-parser.add_argument('--config', dest='config_file', default=S3_ENDPOINT_CONFIG, action='store',
-    help='toml document of known s3 buckets')
+parser.add_argument('--vault-endpoint', dest='vault_endpoint', default="http://127.0.0.1:8200", action='store',
+    help='vault endpoint for credentials')
 parser.add_argument('variant', nargs="*", help="build the pages for the specified variants")
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    config = toml.load(args.config_file)
 
     uniqueSuffix = '.' + str(os.getpid())
 
@@ -266,7 +314,7 @@ if __name__ == "__main__":
         if not os.path.isdir(rss_output):
             os.makedirs(rss_output)
 
-        result = index_archives(config, variant)
+        result = index_archives(args, variant)
 
         # index html
         template = template_lookup.get_template(variant + '.html')

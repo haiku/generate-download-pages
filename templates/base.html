@@ -53,7 +53,7 @@ please refer to this site's <a href="http://download.haiku-os.org/">main page</a
                             %if variant:
                                 %for loc,url in variant.items():
                                     <a href="${url}">${loc}</a>
-                                    %if "europe" in variant:
+                                    %if "eu-west-1" in variant:
                                         <span class="checksum">[<a href="${variant["europe"]}.sha256">checksum</a>]</span>
                                     %else:
                                         <span class="checksum">[unknown]</span>

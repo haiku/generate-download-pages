@@ -9,15 +9,30 @@ This is a script that should be run after each file upload to the nightly-images
 Requirements
 ------------
 
-The requirements are python, the Mako_ library, and boto (for s3)
+The requirements are python, the Mako_ library, boto (for s3), and hvac (for vault)
 
 Config
 ------------
 
-The script `generate-download-pages.py` reads a toml configuration to gain insight about s3 buckets that
-contain nightly images. A sample is provided in `config-sample.toml`.
+The script `generate-download-pages.py` connects to Hasicorp Vault and reads the
+available s3 buckets containing our official nightly image mirrors.
 
 Each section gets deposited as a location in the index.html (europe, US, etc)
+
+Vault Layout
+------------
+
+Generate download pages obtains its secure list of s3 buckets from a deplpoyed
+vault instance.
+
+The format for the vault entries:
+
+s3/nightly/(region)/...
+  - bucket
+  - endpoint (API URL)
+  - public_url (User Access URL)
+  - key
+  - secret
 
 Bucket Layout
 ------------
