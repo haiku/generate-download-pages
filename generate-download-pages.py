@@ -49,9 +49,9 @@ VARIANTS = (
     "ppc",
 #    "x86",
     "x86_64",
-    "x86_gcc2_hybrid",
+    "x86_gcc2h",
 #    "x86_gcc2",
-#    "x86_hybrid",
+#    "x86h",
 )
 
 #
