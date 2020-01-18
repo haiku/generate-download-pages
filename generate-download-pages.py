@@ -36,6 +36,10 @@ PPC_IMAGE_TYPES = (
     ("boot_cd", "Boot CD"),
 )
 
+SPARC_IMAGE_TYPES = (
+    ("raw", "Raw Image"),
+)
+
 IMAGE_TYPES = (
     # ("filename_type", "pretty type")
     ("anyboot", "Anyboot ISO"),
@@ -47,6 +51,7 @@ VARIANTS = (
     "arm",
     "m68k",
     "ppc",
+    "sparc",
 #    "x86",
     "x86_64",
     "x86_gcc2h",
@@ -108,6 +113,8 @@ def headers(variant):
         return list(q for _,q in ARM_IMAGE_TYPES)
     if variant == "ppc":
         return list(q for _,q in PPC_IMAGE_TYPES)
+    if variant == "sparc":
+        return list(q for _,q in SPARC_IMAGE_TYPES)
     return list(q for _,q in IMAGE_TYPES)
 
 
@@ -116,6 +123,8 @@ def imageTypes(variant):
         return list(q for q,_ in ARM_IMAGE_TYPES)
     if variant == "ppc":
         return list(q for q,_ in PPC_IMAGE_TYPES)
+    if varian == "sparc":
+        return list(q for q,_ in SPARC_IMAGE_TYPES)
     return list(q for q,_ in IMAGE_TYPES)
 
 
