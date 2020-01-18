@@ -123,7 +123,7 @@ def imageTypes(variant):
         return list(q for q,_ in ARM_IMAGE_TYPES)
     if variant == "ppc":
         return list(q for q,_ in PPC_IMAGE_TYPES)
-    if varian == "sparc":
+    if variant == "sparc":
         return list(q for q,_ in SPARC_IMAGE_TYPES)
     return list(q for q,_ in IMAGE_TYPES)
 
