@@ -10,13 +10,16 @@ Releasing software that requires these unsupported builds is discouraged.
 		</p>
 
   <div class="box-stop">
-  The ARM port is in an extremely early state. The kernel may load but a
-  lot of work still needs done before you can get a desktop.
+  The ARM port is in an extremely early state. Ongoing work to convert
+  Haiku over to an ARM EFI bootloader means these likely won't function.
+  <i>(yet)</i>
   </div>
 
   <div class="box-warning">
-  These images target the Raspberry Pi 2. Haiku can be built for multiple
-  ARM targets, however Raspberry Pi 2 is the only one that has been automated.
+  These generic ARM images target qemu with an EFI bootloader. They can also
+  be <i>processed</i> by an <a href="https://github.com/haiku/rune">installation
+  tool</a> to run on a wide range of small ARM devices including the
+  Raspberry Pi (2+), Nano Pi, OrangePi, Tinkerboard, and more.
   </div>
 
 </%block>
