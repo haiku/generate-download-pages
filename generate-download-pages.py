@@ -1,17 +1,11 @@
 import argparse
-from collections import defaultdict, OrderedDict, namedtuple
+from collections import OrderedDict, namedtuple
 import email.utils
 import toml
 import os
 import re
-import sys
 import shutil
-import time
-
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
+from urllib.parse import urlparse
 
 import boto
 import boto.s3.connection
@@ -136,7 +130,7 @@ def index_archives(config, variant):
 
     # populate a dict with the newest entry for each image type
     currentImages = {}
-    locations = config.keys()
+    locations = list(config.keys())
     revisions = []
 
     for location, info in config.items():
@@ -144,19 +138,19 @@ def index_archives(config, variant):
 
         if 's3_endpoint' in info:
             # locate images in s3 bucket
-            print("Probe s3 bucket in " + location + " for " + variant + "...")
+            print(("Probe s3 bucket in " + location + " for " + variant + "..."))
             s3 = connect_s3(info['s3_endpoint'], info['s3_key'], info['s3_secret'])
             images = locate_images_arch(s3, info['s3_bucket'], variant)
         # TODO: More endpoint types?
 
-        if location not in content.keys():
+        if location not in list(content.keys()):
             content[location] = {}
 
         for image in images:
             if image.image_type not in type_columns:
                 continue
 
-            if image.revision not in content[location].keys():
+            if image.revision not in list(content[location].keys()):
                 content[location][image.revision] = {}
 
             content[location][image.revision][image.image_type] = image.filename
@@ -179,15 +173,15 @@ def index_archives(config, variant):
             urls = {}
             for location in locations:
                 # Each row has a location
-                if location not in content.keys():
+                if location not in list(content.keys()):
                     continue
                 local_config = config[location]
                 local_info = content[location]
-                if revision not in local_info.keys():
+                if revision not in list(local_info.keys()):
                     # Location doesn't have this revision
                     continue
                 local_revision = local_info[revision]
-                if imagetype not in local_revision.keys():
+                if imagetype not in list(local_revision.keys()):
                     # Location doesn't have this imagetype
                     continue
                 prefix = local_config['public_url'] + '/' + local_config['s3_bucket'] + '/' + variant + '/'
@@ -219,7 +213,7 @@ def index_files_for_rss(archive_dir, limit=20):
         if len(rss_output) == limit:
             break
         path = os.path.join(archive_dir, entry)
-        size = os.path.getsize(path) >> 20L
+        size = os.path.getsize(path) >> 20
         date = email.utils.formatdate(os.path.getmtime(path))
         rss_output.append(Entry(entry, date, size))
     return rss_output
@@ -248,7 +242,7 @@ if __name__ == "__main__":
             if variant in args.variant:
                 variants.append(variant)
         if len(variants) != len(args.variant):
-            print "WARNING: cannot find all supplied variants. Only building the known variants. Please check your input"
+            print("WARNING: cannot find all supplied variants. Only building the known variants. Please check your input")
 
     template_lookup = TemplateLookup(directories=[TEMPLATE_DIR])
 
