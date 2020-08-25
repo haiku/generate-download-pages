@@ -45,6 +45,7 @@ VARIANTS = (
     "arm",
     "m68k",
     "ppc",
+    "riscv64",
     "sparc",
 #    "x86",
     "x86_64",
