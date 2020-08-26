@@ -25,6 +25,10 @@ ARM_IMAGE_TYPES = (
     ("mmc", "SD Card Image"),
 )
 
+RISCV64_IMAGE_TYPES = (
+    ("mmc", "SD Card Image"),
+)
+
 PPC_IMAGE_TYPES = (
     ("raw", "Raw Image"),
     ("boot_cd", "Boot CD"),
@@ -108,6 +112,8 @@ def headers(variant):
         return list(q for _,q in ARM_IMAGE_TYPES)
     if variant == "ppc":
         return list(q for _,q in PPC_IMAGE_TYPES)
+    if variant == "riscv64":
+        return list(q for _,q in RISCV64_IMAGE_TYPES)
     if variant == "sparc":
         return list(q for _,q in SPARC_IMAGE_TYPES)
     return list(q for _,q in IMAGE_TYPES)
@@ -118,6 +124,8 @@ def imageTypes(variant):
         return list(q for q,_ in ARM_IMAGE_TYPES)
     if variant == "ppc":
         return list(q for q,_ in PPC_IMAGE_TYPES)
+    if variant == "riscv64":
+        return list(q for q,_ in RISCV64_IMAGE_TYPES)
     if variant == "sparc":
         return list(q for q,_ in SPARC_IMAGE_TYPES)
     return list(q for q,_ in IMAGE_TYPES)
