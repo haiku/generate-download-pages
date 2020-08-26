@@ -52,13 +52,12 @@ please refer to this site's <a href="http://download.haiku-os.org/">main page</a
                         <td>
                             %if variant:
                                 %for loc,url in variant.items():
-                                    <a href="${url}">${loc}</a>
-                                    %if "europe" in variant:
-                                        <span class="checksum">[<a href="${variant["europe"]}.sha256">checksum</a>]</span>
-                                    %else:
-                                        <span class="checksum">[unknown]</span>
-                                    %endif
+                                    <a href="${url}">${loc}</a>&nbsp;
                                 %endfor
+                                %if "us" in variant:
+                                    &nbsp;<span class="checksum">[<a href="${variant["us"]}.sha256">checksum</a>]</span>
+                                    &nbsp;<span class="checksum">[<a href="${variant["us"]}.minisig">minisig</a>]</span>
+                                %endif
                             %endif
                         </td>
                     %endfor
@@ -73,7 +72,7 @@ please refer to this site's <a href="http://download.haiku-os.org/">main page</a
 </div>
 
 <div id="footer">
-Copyright 2001 - 2018 Haiku, Inc. &#8212; Haiku&#174; and the
+Copyright 2001 - 2020 Haiku, Inc. &#8212; Haiku&#174; and the
 HAIKU logo&#174; are registered trademarks of
 <a href="http://www.haiku-inc.org">Haiku, Inc.</a>
 </div>
