@@ -8,7 +8,7 @@ html, body {
 }
 body {
 	background-color: #3B5378;
-	background-image: url('/style/bg-page.png');
+	background-image: url('bg-page.png');
 	background-repeat: repeat-x;
 
 	color: #555;
@@ -24,11 +24,11 @@ body {
 	height: 89px;
 }
 #menu {
-	background-image: url('/style/bg-menu.png');
+	background-image: url('bg-menu.png');
 	height: 24px;
 }
 #preface {
-	background-image: url('/style/bg-preface.png');
+	background-image: url('bg-preface.png');
 	overflow: auto;
 	color: #FFFFFF;
 	font-weight: bold;
@@ -44,12 +44,12 @@ body {
 	margin: 15px 30px 15px 130px;
 }
 #content {
-	background-image: url('/style/bg-main.png');
+	background-image: url('bg-main.png');
 	min-height: 400px;
 	padding: 15px 30px 15px 30px;
 }
 #footer {
-	background-image: url('/style/bg-legal.png');
+	background-image: url('bg-legal.png');
 	padding: 40px;
 	text-align: center;
 	font-size: 0.6em;
@@ -76,7 +76,7 @@ body {
 	height: 38px;
 	padding: 5px 8px 5px 5px;
 	background-color: #214364;
-	background-image: url('/style/topnav-main.png');
+	background-image: url('topnav-main.png');
 	font-size: 12px;
 	color: #FFF;
 }
@@ -297,13 +297,13 @@ thead th {
 	min-height: 42px;
 }
 .box-info {
-	background: #e4ffde url(/style/alert_info_32.png) 15px 15px no-repeat;
+	background: #e4ffde url(alert_info_32.png) 15px 15px no-repeat;
 }
 .box-warning {
-	background: #fffbc6 url(/style/alert_warning_32.png) 15px 15px no-repeat;
+	background: #fffbc6 url(alert_warning_32.png) 15px 15px no-repeat;
 }
 .box-stop {
-	background: #ffeae6 url(/style/alert_stop_32.png) 15px 15px no-repeat;
+	background: #ffeae6 url(alert_stop_32.png) 15px 15px no-repeat;
 }
 
 /***********************************************************************************************
