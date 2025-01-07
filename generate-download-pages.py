@@ -40,7 +40,7 @@ SPARC_IMAGE_TYPES = (
 IMAGE_TYPES = (
     # ("filename_type", "pretty type")
     ("anyboot", "Anyboot ISO"),
-    ("raw", "Raw Image"),
+    #("raw", "Raw Image"),
     # ("cd", "Plain ISO"),
 )
 
