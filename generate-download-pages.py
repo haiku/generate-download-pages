@@ -7,8 +7,7 @@ import re
 import shutil
 from urllib.parse import urlparse
 
-import boto
-import boto.s3.connection
+import boto3
 
 from mako.lookup import TemplateLookup
 
@@ -76,20 +75,25 @@ Image = namedtuple("Image", ['filename', 'revision', 'image_type'])
 Row = type("Row", (object,), {})
 
 def connect_s3(endpoint, key, secret):
-    url_object = urlparse(endpoint)
-    return boto.connect_s3(
+    return boto3.client('s3',
+        endpoint_url=endpoint,
         aws_access_key_id = key,
-        aws_secret_access_key = secret,
-        host = url_object.hostname,
-        port = url_object.port,
-        is_secure = url_object.scheme.startswith('https'),
-        calling_format = boto.s3.connection.OrdinaryCallingFormat(),
-        )
+        aws_secret_access_key = secret)
+
 
 def locate_images_arch(s3_connection, bucket, arch):
-    bucket = s3_connection.get_bucket(bucket, validate=True)
+    objects = s3_connection.list_objects_v2(Bucket=bucket, Prefix=arch)
+    if 'Contents' not in objects:
+        return []
+
     # Expected storage: <arch>/nighty-image.zip
-    s3files = [item.name for item in bucket.list()]
+    s3files = [item['Key'] for item in objects['Contents']]
+    while objects['IsTruncated'] == True:
+        objects = s3_connection.list_objects_v2(Bucket=bucket, Prefix=arch, ContinuationToken=objects['NextContinuationToken'])
+        if 'Contents' not in objects:
+            break
+        s3files += [item['Key'] for item in objects['Contents']]
+
     s3files.sort(reverse=True)
 
     images = []
