@@ -1,5 +1,6 @@
 [countryA]
 public_url = "https://cdn.haiku-os.org"
+s3_vhost = true
 s3_endpoint = "https://cdn.haiku-os.org"
 s3_bucket = "nightly"
 s3_key = "A_KEY"
@@ -7,6 +8,7 @@ s3_secret = "A_SECRET"
 
 [countryB]
 public_url = "https://cdn.haiku-os.org"
+s3_vhost = false
 s3_endpoint = "https://cdn.haiku-os.org"
 s3_bucket = "nightly"
 s3_key = "A_KEY"

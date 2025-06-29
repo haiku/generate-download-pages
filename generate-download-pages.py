@@ -198,6 +198,8 @@ def index_archives(config, variant):
                     # Location doesn't have this imagetype
                     continue
                 prefix = local_config['public_url'] + '/' + local_config['s3_bucket'] + '/' + variant + '/'
+                if local_config['s3_vhost'] == True:
+                    prefix = local_config['public_url'] + '/' + variant + '/'
                 urls.update({location: prefix + local_revision[imagetype]})
             row.variants.append(urls)
         table.append(row)
