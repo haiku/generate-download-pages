@@ -1,3 +1,4 @@
+
 [countryA]
 public_url = "https://cdn.haiku-os.org"
 s3_vhost = true

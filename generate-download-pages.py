@@ -46,8 +46,9 @@ IMAGE_TYPES = (
 
 VARIANTS = (
     "arm",
-    "m68k",
-    "ppc",
+    "arm64",
+#    "m68k",
+#    "ppc",
     "riscv64",
     "sparc",
 #    "x86",
@@ -112,7 +113,7 @@ def natural_sort_key(s, _nsre=re.compile('([0-9]+)')):
             for text in re.split(_nsre, s)]
 
 def headers(variant):
-    if variant == "arm":
+    if variant == "arm" or variant == "arm64":
         return list(q for _,q in ARM_IMAGE_TYPES)
     if variant == "ppc":
         return list(q for _,q in PPC_IMAGE_TYPES)
@@ -124,7 +125,7 @@ def headers(variant):
 
 
 def imageTypes(variant):
-    if variant == "arm":
+    if variant == "arm" or variant == "arm64":
         return list(q for q,_ in ARM_IMAGE_TYPES)
     if variant == "ppc":
         return list(q for q,_ in PPC_IMAGE_TYPES)
