@@ -1,0 +1,25 @@
+<%inherit file="base.html"/>
+
+<%block name="title">ARM64 - Unsupported Builds</%block>
+
+<%block name="description">
+		<p>
+This is an unsupported variant, as x86 is the only CPU architecture being
+targeted for R1. It is provided for development and testing purposes only.
+Releasing software that requires these unsupported builds is discouraged.
+		</p>
+
+  <div class="box-stop">
+  The ARM64 (aarch64) port is in an extremely early state.
+  </div>
+
+  <div class="box-warning">
+  These generic ARM images target qemu with an EFI bootloader. They can also
+  be <i>processed</i> by an <a href="https://github.com/haiku/rune">installation
+  tool</a> to run on a wide range of small ARM devices including the
+  Raspberry Pi (3+), Nano Pi, OrangePi, Tinkerboard, and more.
+  </div>
+
+</%block>
+
+<%block name="table_title">Unsupported ARM64 Builds</%block>
